@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $user->name }} (@ {{ $user->username }}) - Link Bio</title>
+    <title>{{ $user->name }} ({{'@' .$user->username }}) - Link Bio</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -68,15 +68,13 @@
         </div>
 
         <h1 class="mt-4 text-2xl font-bold text-white text-shadow-sm">{{ $user->name }}</h1>
-        <p class="text-white/90 text-sm mt-1 mb-8 font-medium">@ {{ $user->username }}</p>
+        <p class="text-white/90 text-sm mt-1 mb-8 font-medium">{{ '@' .$user->username }}</p>
 
         <div class="w-full space-y-4">
             @forelse($links as $link)
                 <a href="{{ url($link->short_code) }}" target="_blank" 
                    class="block w-full bg-white/90 hover:bg-white backdrop-blur-sm text-gray-800 font-semibold py-4 px-6 rounded-full shadow-lg transform transition duration-200 hover:scale-[1.02] text-center border border-white/50 relative overflow-hidden group">
-                    
                     <span class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
-                    
                     {{ $link->title }}
                 </a>
             @empty

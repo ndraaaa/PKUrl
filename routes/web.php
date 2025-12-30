@@ -50,6 +50,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/links', 'index')->name('links.index');
         Route::post('/links', 'store')->name('links.store');
         Route::delete('/links/{id}', 'destroy')->name('links.destroy');
+        Route::get('/links/{id}/qr', 'generateQrCode')->name('links.qr');
     });
 
     // Route Fitur Bio
@@ -58,9 +59,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/bio/profile', 'updateProfile')->name('bio.update.profile');
         Route::post('/bio/link', 'store')->name('bio.link.store');
         Route::delete('/bio/link/{id}', 'destroy')->name('bio.link.destroy');
+        Route::put('/bio/link/{id}', 'updateLink')->name('bio.link.update');
     });
 });
 
 require __DIR__ . '/auth.php';
 Route::get('/@{username}', [BioController::class, 'show'])->name('bio.show');
-Route::get('/{code}', [App\Http\Controllers\LinkController::class, 'redirect'])->name('shortlink.redirect');
+Route::get('/{path}', [App\Http\Controllers\LinkController::class, 'resolvePath'])->name('path.resolve');

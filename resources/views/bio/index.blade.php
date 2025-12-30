@@ -102,20 +102,26 @@
                     </div>
                 </div>
 
-                <div class="md:col-span-2">
-
+                <div class="md:col-span-2" x-data="{ 
+                    showEditModal: false, 
+                    editId: '', 
+                    editTitle: '', 
+                    editUrl: '',
+                    // Helper untuk membuat URL update dinamis
+                    get updateUrl() { 
+                        return '{{ url('/bio/link') }}/' + this.editId; 
+                    }
+                }">
+                    
                     <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-6 mb-6">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Tambah Tombol Link</h3>
-                        <form action="{{ route('bio.link.store') }}" method="POST"
-                            class="flex flex-col sm:flex-row gap-4">
+                        <form action="{{ route('bio.link.store') }}" method="POST" class="flex flex-col sm:flex-row gap-4">
                             @csrf
                             <div class="flex-1">
-                                <x-text-input name="title" type="text" class="w-full"
-                                    placeholder="Judul (Contoh: WhatsApp Saya)" required />
+                                <x-text-input name="title" type="text" class="w-full" placeholder="Judul (Contoh: WhatsApp Saya)" required />
                             </div>
                             <div class="flex-1">
-                                <x-text-input name="original_url" type="url" class="w-full"
-                                    placeholder="URL Tujuan (https://...)" required />
+                                <x-text-input name="original_url" type="url" class="w-full" placeholder="URL Tujuan (https://...)" required />
                             </div>
                             <x-primary-button>{{ __('Tambah') }}</x-primary-button>
                         </form>
@@ -125,48 +131,81 @@
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                        Judul Tombol</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                        URL Tujuan</th>
-                                    <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                        Aksi</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Judul Tombol</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">URL Tujuan</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                 @forelse ($links as $link)
                                     <tr>
-                                        <td
-                                            class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                             {{ $link->title }}
                                         </td>
-                                        <td
-                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             <div class="truncate w-48">{{ $link->original_url }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <form action="{{ route('bio.link.destroy', $link->id) }}" method="POST"
-                                                onsubmit="return confirm('Hapus tombol ini?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                    class="text-red-600 hover:text-red-900 dark:text-red-400">Hapus</button>
-                                            </form>
+                                            <div class="flex justify-end items-center space-x-3">
+                                                
+                                                <button @click="
+                                                    showEditModal = true; 
+                                                    editId = '{{ $link->id }}'; 
+                                                    editTitle = '{{ addslashes($link->title) }}'; 
+                                                    editUrl = '{{ $link->original_url }}';
+                                                " class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                                    Edit
+                                                </button>
+
+                                                <form action="{{ route('bio.link.destroy', $link->id) }}" method="POST" onsubmit="return confirm('Hapus tombol ini?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Hapus</button>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3"
-                                            class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                        <td colspan="3" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                                             Belum ada link tombol. Tambahkan di atas.
                                         </td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+
+                    <div x-show="showEditModal" 
+                         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm"
+                         style="display: none;"
+                         x-transition.opacity>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md relative" @click.away="showEditModal = false">
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Edit Link</h3>
+
+                            <form :action="updateUrl" method="POST">
+                                @csrf
+                                @method('PUT')
+
+                                <div class="mb-4">
+                                    <x-input-label for="edit_title" value="Judul Tombol" />
+                                    <x-text-input id="edit_title" name="title" type="text" class="w-full mt-1" x-model="editTitle" required />
+                                </div>
+
+                                <div class="mb-6">
+                                    <x-input-label for="edit_url" value="URL Tujuan" />
+                                    <x-text-input id="edit_url" name="original_url" type="url" class="w-full mt-1" x-model="editUrl" required />
+                                </div>
+
+                                <div class="flex justify-end space-x-3">
+                                    <button type="button" @click="showEditModal = false" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                                        Batal
+                                    </button>
+                                    <x-primary-button>Simpan Perubahan</x-primary-button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
 
                 </div>

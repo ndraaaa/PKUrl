@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Dashboard Ringkasan') }}
+            {{ __('Dashboard Admin') }}
         </h2>
     </x-slot>
 
@@ -60,7 +60,6 @@
                                     <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $totalUsers }}</div>
                                 </div>
                             </div>
-                            <a href="{{ route('admin.users') }}" class="text-xs text-yellow-500 hover:underline">Kelola &rarr;</a>
                         </div>
                     </div>
                 @endif
@@ -95,7 +94,7 @@
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Judul / URL</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipe</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Klik</th>
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Link</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Link</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -114,7 +113,7 @@
                                     <td class="px-4 py-3 text-sm font-bold text-gray-900 dark:text-gray-100">
                                         {{ number_format($link->click_count) }}
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-right">
+                                    <td class="px-4 py-3 text-sm text-left">
                                         <a href="{{ url($link->short_code) }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400">
                                             /{{ $link->short_code }}
                                         </a>

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Link;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -32,7 +31,7 @@ class BioController extends Controller
 
         $request->validate([
             'username' => ['required', 'alpha_dash', 'max:50', Rule::unique('users')->ignore($user->id)],
-            'profile'   => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'profile'   => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:5120'],
             'theme'    => ['required', 'in:default,ocean,midnight,sunset,nature'],
         ]);
 
@@ -40,16 +39,13 @@ class BioController extends Controller
         $user->theme    = $request->theme;
 
         if ($request->hasFile('profile')) {
-            if ($user->profile && Storage::disk('public')->exists($user->profile)) {
-                Storage::disk('public')->delete($user->profile);
-            }
             $path = $request->file('profile')->store('profiles', 'public');
             $user->profile = $path;
         }
 
-        $user->save(); // Error 'save' akan hilang karena kita sudah definisikan @var di atas
+        $user->save(); // Saat save() dipanggil, event 'updating' di Model berjalan
 
-        return redirect()->back()->with('success', 'Profil dan Tema berhasil diperbarui!');
+        return redirect()->back()->with('success', 'Profil diperbarui!');
     }
 
     // 3. ADMIN: Tambah Link Baru ke Bio
@@ -72,6 +68,24 @@ class BioController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Link berhasil ditambahkan!');
+    }
+
+    public function updateLink(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'required|max:50',
+            'original_url' => 'required|url',
+        ]);
+
+        // Cari link milik user, pastikan tipenya biolink
+        $link = Auth::user()->links()->where('type', 'biolink')->findOrFail($id);
+
+        $link->update([
+            'title' => $request->title,
+            'original_url' => $request->original_url,
+        ]);
+
+        return redirect()->back()->with('success', 'Link berhasil diperbarui!');
     }
 
     // 4. ADMIN: Hapus Link Bio

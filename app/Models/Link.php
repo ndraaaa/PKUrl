@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Link extends Model
 {
@@ -17,11 +18,32 @@ class Link extends Model
         'type',
         'click_count',
         'is_active',
+        'qr_path',
     ];
 
     // Relasi: Link ini milik User siapa?
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * The "booted" method of the model.
+     * Disini kita pasang logika otomatisnya.
+     */
+    protected static function booted(): void
+    {
+        // Event 'deleting': Dijalankan TEPAT SEBELUM data dihapus dari database
+        static::deleting(function ($link) {
+
+            // Cek apakah link ini punya file QR Code
+            if ($link->qr_path) {
+                // Cek apakah file fisiknya ada di storage public
+                if (Storage::disk('public')->exists($link->qr_path)) {
+                    // HAPUS FILENYA
+                    Storage::disk('public')->delete($link->qr_path);
+                }
+            }
+        });
     }
 }
