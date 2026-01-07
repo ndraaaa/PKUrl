@@ -1,216 +1,212 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Halaman Bio / Link-in-Bio') }}
+        <h2 class="font-bold text-2xl text-gray-800 dark:text-gray-200 leading-tight">
+            Edit Halaman: {{ $page->title }}
         </h2>
+        <p class="text-sm text-gray-500 mt-1">Ubah tampilan, ganti logo, dan atur tema halaman ini.</p>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto">
 
             @if (session('success'))
-                <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
-                    {{ session('success') }}
+                <div x-data="{ show: true }" x-show="show"
+                    class="mb-6 bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r shadow-sm flex justify-between items-center mx-4 lg:mx-0">
+                    <div class="flex items-center text-emerald-700">
+                        <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span class="font-medium">{{ session('success') }}</span>
+                    </div>
+                    <button @click="show = false" class="text-emerald-400 hover:text-emerald-600"><svg class="w-5 h-5"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg></button>
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-                <div class="md:col-span-1">
-                    <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Profil Bio</h3>
+                <div class="lg:col-span-7 space-y-6 mx-4 lg:mx-0">
 
-                        <form action="{{ route('bio.update.profile') }}" method="POST" enctype="multipart/form-data">
-                            @csrf
+                    <div
+                        class="bg-white dark:bg-gray-800 shadow-xl rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-700">
+                        <div
+                            class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                            <h3 class="font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                                🎨 Informasi Halaman
+                            </h3>
+                        </div>
 
-                            <div class="flex flex-col items-center mb-4">
-                                <div
-                                    class="w-24 h-24 rounded-full overflow-hidden bg-gray-200 mb-2 border-2 border-indigo-500">
-                                    @if ($user->profile)
-                                        <img src="{{ asset('storage/' . $user->profile) }}"
-                                            class="w-full h-full object-cover">
-                                    @else
-                                        <div
-                                            class="w-full h-full flex items-center justify-center text-gray-400 text-2xl font-bold">
-                                            {{ substr($user->name, 0, 1) }}
-                                        </div>
-                                    @endif
-                                </div>
-                                <label for="profile"
-                                    class="cursor-pointer text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400">
-                                    Ganti Foto
-                                </label>
-                                <input type="file" name="profile" id="profile" class="hidden"
-                                    onchange="this.form.submit()">
-                            </div>
-
-                            <div class="mb-4">
-                                <x-input-label for="username" value="Username (URL)" />
-                                <div class="flex mt-1">
-                                    <span
-                                        class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400">@</span>
-                                    <x-text-input id="username" name="username" type="text"
-                                        class="block w-full rounded-l-none" :value="old('username', $user->username)" placeholder="namaanda" />
-                                </div>
-                                <x-input-error class="mt-2" :messages="$errors->get('username')" />
-                            </div>
-
-                            <div class="mb-6">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pilih Tema Background</label>
-                                
-                                <div class="grid grid-cols-5 gap-2">
-                                    <label class="cursor-pointer">
-                                        <input type="radio" name="theme" value="default" class="peer sr-only" {{ $user->theme == 'default' ? 'checked' : '' }}>
-                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-indigo-500 transition-all hover:scale-110" title="Default"></div>
-                                    </label>
-
-                                    <label class="cursor-pointer">
-                                        <input type="radio" name="theme" value="ocean" class="peer sr-only" {{ $user->theme == 'ocean' ? 'checked' : '' }}>
-                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-800 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-indigo-500 transition-all hover:scale-110" title="Ocean Blue"></div>
-                                    </label>
-
-                                    <label class="cursor-pointer">
-                                        <input type="radio" name="theme" value="midnight" class="peer sr-only" {{ $user->theme == 'midnight' ? 'checked' : '' }}>
-                                        <div class="w-10 h-10 rounded-full bg-gray-800 border border-gray-600 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-indigo-500 transition-all hover:scale-110" title="Midnight"></div>
-                                    </label>
-
-                                    <label class="cursor-pointer">
-                                        <input type="radio" name="theme" value="sunset" class="peer sr-only" {{ $user->theme == 'sunset' ? 'checked' : '' }}>
-                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-indigo-500 transition-all hover:scale-110" title="Sunset"></div>
-                                    </label>
-
-                                    <label class="cursor-pointer">
-                                        <input type="radio" name="theme" value="nature" class="peer sr-only" {{ $user->theme == 'nature' ? 'checked' : '' }}>
-                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-emerald-700 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-indigo-500 transition-all hover:scale-110" title="Nature"></div>
-                                    </label>
-                                </div>
-                                <x-input-error class="mt-2" :messages="$errors->get('theme')" />
-                            </div>
-
-                            <x-primary-button class="w-full justify-center">{{ __('Simpan Profil') }}</x-primary-button>
-                        </form>
-
-                        @if ($user->username)
-                            <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                                <p class="text-xs text-center text-gray-500 mb-2">Link Bio Anda:</p>
-                                <a href="{{ url('@' . $user->username) }}" target="_blank"
-                                    class="block w-full text-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                                    Lihat Halaman Publik
-                                </a>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="md:col-span-2" x-data="{ 
-                    showEditModal: false, 
-                    editId: '', 
-                    editTitle: '', 
-                    editUrl: '',
-                    // Helper untuk membuat URL update dinamis
-                    get updateUrl() { 
-                        return '{{ url('/bio/link') }}/' + this.editId; 
-                    }
-                }">
-                    
-                    <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-6 mb-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Tambah Tombol Link</h3>
-                        <form action="{{ route('bio.link.store') }}" method="POST" class="flex flex-col sm:flex-row gap-4">
-                            @csrf
-                            <div class="flex-1">
-                                <x-text-input name="title" type="text" class="w-full" placeholder="Judul (Contoh: WhatsApp Saya)" required />
-                            </div>
-                            <div class="flex-1">
-                                <x-text-input name="original_url" type="url" class="w-full" placeholder="URL Tujuan (https://...)" required />
-                            </div>
-                            <x-primary-button>{{ __('Tambah') }}</x-primary-button>
-                        </form>
-                    </div>
-
-                    <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg overflow-hidden">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Judul Tombol</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">URL Tujuan</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                @forelse ($links as $link)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                            {{ $link->title }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            <div class="truncate w-48">{{ $link->original_url }}</div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div class="flex justify-end items-center space-x-3">
-                                                
-                                                <button @click="
-                                                    showEditModal = true; 
-                                                    editId = '{{ $link->id }}'; 
-                                                    editTitle = '{{ addslashes($link->title) }}'; 
-                                                    editUrl = '{{ $link->original_url }}';
-                                                " class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
-                                                    Edit
-                                                </button>
-
-                                                <form action="{{ route('bio.link.destroy', $link->id) }}" method="POST" onsubmit="return confirm('Hapus tombol ini?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Hapus</button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="3" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                                            Belum ada link tombol. Tambahkan di atas.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div x-show="showEditModal" 
-                         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm"
-                         style="display: none;"
-                         x-transition.opacity>
-                        
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md relative" @click.away="showEditModal = false">
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Edit Link</h3>
-
-                            <form :action="updateUrl" method="POST">
+                        <div class="p-6 md:p-8">
+                            <form action="{{ route('pages.update', $page->id) }}" method="POST"
+                                enctype="multipart/form-data" class="space-y-6">
                                 @csrf
                                 @method('PUT')
 
-                                <div class="mb-4">
-                                    <x-input-label for="edit_title" value="Judul Tombol" />
-                                    <x-text-input id="edit_title" name="title" type="text" class="w-full mt-1" x-model="editTitle" required />
+                                <div class="flex flex-col sm:flex-row items-center gap-6">
+                                    <div class="relative group">
+                                        @if ($page->avatar)
+                                            <img id="avatar-preview"
+                                                class="h-24 w-24 rounded-full object-cover border-4 border-emerald-100 shadow-md"
+                                                src="{{ asset('storage/' . $page->avatar) }}" alt="Avatar">
+                                        @else
+                                            <div id="avatar-preview-default"
+                                                class="h-24 w-24 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-3xl border-4 border-white shadow-md">
+                                                {{ substr($page->title, 0, 1) }}
+                                            </div>
+                                            <img id="avatar-preview"
+                                                class="hidden h-24 w-24 rounded-full object-cover border-4 border-emerald-100 shadow-md">
+                                        @endif
+
+                                        <label for="avatar"
+                                            class="absolute inset-0 flex items-center justify-center bg-black/40 text-white rounded-full opacity-0 group-hover:opacity-100 transition cursor-pointer">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                                </path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            </svg>
+                                        </label>
+                                        <input id="avatar" name="avatar" type="file" class="hidden"
+                                            accept="image/*" onchange="previewImage(this)">
+                                    </div>
+                                    <div class="text-center sm:text-left">
+                                        <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100">Logo / Foto
+                                            Profil</h4>
+                                        <p class="text-xs text-gray-500 mt-1">Klik gambar untuk mengganti.<br>Max: 2MB.
+                                        </p>
+                                    </div>
                                 </div>
 
-                                <div class="mb-6">
-                                    <x-input-label for="edit_url" value="URL Tujuan" />
-                                    <x-text-input id="edit_url" name="original_url" type="url" class="w-full mt-1" x-model="editUrl" required />
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="group">
+                                        <label
+                                            class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Link
+                                            URL</label>
+                                        <div
+                                            class="flex rounded-xl shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-emerald-500 bg-white dark:bg-gray-900 dark:ring-gray-600">
+                                            <span
+                                                class="flex select-none items-center pl-3 pr-2 text-gray-500 sm:text-sm bg-gray-50 dark:bg-gray-800 rounded-l-xl border-r border-gray-200 dark:border-gray-700">
+                                                {{ request()->getHost() }}/
+                                            </span>
+                                            <input type="text" name="handle"
+                                                value="{{ old('handle', $page->handle) }}"
+                                                class="block flex-1 border-0 bg-transparent py-2.5 pl-2 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6 rounded-r-xl"
+                                                placeholder="nama-unik">
+                                        </div>
+                                    </div>
+
+                                    <div class="group">
+                                        <label
+                                            class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Judul
+                                            Halaman</label>
+                                        <input type="text" name="title" value="{{ old('title', $page->title) }}"
+                                            class="w-full px-4 py-2.5 rounded-xl border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 shadow-sm dark:bg-gray-900 dark:border-gray-600 dark:text-white">
+                                    </div>
                                 </div>
 
-                                <div class="flex justify-end space-x-3">
-                                    <button type="button" @click="showEditModal = false" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-                                        Batal
+                                <div>
+                                    <label
+                                        class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Pilih
+                                        Tema</label>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        @foreach (['default' => 'Emerald', 'ocean' => 'Ocean', 'sunset' => 'Sunset', 'midnight' => 'Midnight'] as $key => $label)
+                                            <label class="cursor-pointer">
+                                                <input type="radio" name="theme" value="{{ $key }}"
+                                                    class="peer sr-only" {{ $page->theme == $key ? 'checked' : '' }}>
+                                                <div
+                                                    class="rounded-xl border-2 border-transparent peer-checked:border-emerald-500 peer-checked:ring-2 peer-checked:ring-emerald-200 overflow-hidden shadow-sm hover:shadow-md transition">
+                                                    <div
+                                                        class="h-12 w-full 
+                                                        {{ $key == 'default' ? 'bg-gradient-to-br from-gray-900 via-emerald-900 to-gray-900' : '' }}
+                                                        {{ $key == 'ocean' ? 'bg-gradient-to-br from-blue-400 to-blue-600' : '' }}
+                                                        {{ $key == 'sunset' ? 'bg-gradient-to-br from-orange-400 to-pink-600' : '' }}
+                                                        {{ $key == 'midnight' ? 'bg-gray-900' : '' }}
+                                                    ">
+                                                    </div>
+                                                    <div
+                                                        class="p-2 text-center text-xs font-bold bg-white dark:bg-gray-700 dark:text-white">
+                                                        {{ $label }}</div>
+                                                </div>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <div class="pt-4 border-t border-gray-100 dark:border-gray-700">
+                                    <button type="submit"
+                                        class="w-full md:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition transform hover:-translate-y-0.5 flex justify-center items-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4">
+                                            </path>
+                                        </svg>
+                                        Simpan Perubahan
                                     </button>
-                                    <x-primary-button>Simpan Perubahan</x-primary-button>
                                 </div>
                             </form>
                         </div>
                     </div>
-
                 </div>
-            </div>
 
+                <div class="hidden lg:block lg:col-span-5 sticky top-24">
+                    <div class="flex flex-col items-center">
+                        <h3 class="text-gray-500 font-bold text-sm mb-4 uppercase tracking-widest">Live Preview</h3>
+                        <div
+                            class="relative mx-auto border-gray-900 bg-gray-900 border-[14px] rounded-[2.5rem] h-[650px] w-[320px] shadow-2xl flex flex-col justify-start overflow-hidden">
+                            <div class="absolute top-0 right-0 z-50 p-3">
+                                <button
+                                    onclick="document.getElementById('previewFrame').contentWindow.location.reload();"
+                                    class="p-1.5 bg-black/20 hover:bg-black/40 rounded-full text-white backdrop-blur-sm transition shadow-sm">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                        </path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="w-full h-full bg-white rounded-[2rem] overflow-hidden relative">
+                                <iframe id="previewFrame" src="{{ url($page->handle) }}"
+                                    class="w-[125%] h-[125%] origin-top-left transform scale-80 border-0 bg-white"
+                                    frameborder="0"></iframe>
+                            </div>
+                        </div>
+                        <div class="mt-6">
+                            <a href="{{ url($page->handle) }}" target="_blank"
+                                class="text-emerald-600 font-bold hover:underline flex items-center justify-center">
+                                Buka di Tab Baru <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14">
+                                    </path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
+
+    <script>
+        function previewImage(input) {
+            const preview = document.getElementById('avatar-preview');
+            const defaultPreview = document.getElementById('avatar-preview-default');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    if (defaultPreview) defaultPreview.classList.add('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
 </x-app-layout>

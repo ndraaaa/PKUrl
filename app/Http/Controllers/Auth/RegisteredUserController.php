@@ -31,14 +31,22 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            // Validasi Username (Unik & tidak boleh spasi)
+            'username' => ['required', 'string', 'alpha_dash', 'max:50', 'unique:users', 'unique:links,short_code', 'not_in:login,register,dashboard,admin'],
+            // Validasi No HP (Minimal 10 angka)
+            'phone' => ['required', 'numeric', 'digits_between:10,15'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
             'name' => $request->name,
+            'username' => $request->username,
+            'phone' => $request->phone,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'user',
+            'theme' => 'default',
         ]);
 
         event(new Registered($user));

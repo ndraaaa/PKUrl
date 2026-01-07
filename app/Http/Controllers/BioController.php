@@ -18,7 +18,7 @@ class BioController extends Controller
         $user = Auth::user();
 
         // Ambil link tipe 'biolink' milik user
-        $links = $user->links()->where('type', 'biolink')->latest()->get();
+        $links = $user->links()->where('type', 'biolink')->orderBy('created_at', 'desc')->get();
 
         return view('bio.index', compact('user', 'links'));
     }

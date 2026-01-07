@@ -12,6 +12,7 @@ class Link extends Model
 
     protected $fillable = [
         'user_id',
+        'page_id',
         'title',
         'original_url',
         'short_code',
@@ -22,9 +23,9 @@ class Link extends Model
     ];
 
     // Relasi: Link ini milik User siapa?
-    public function user()
+    public function page()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Page::class);
     }
 
     /**

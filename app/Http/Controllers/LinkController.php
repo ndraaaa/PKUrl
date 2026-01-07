@@ -3,143 +3,170 @@
 namespace App\Http\Controllers;
 
 use App\Models\Link;
-use App\Models\User;
+use App\Models\Page;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class LinkController extends Controller
 {
-    // Menampilkan daftar link
-    public function index()
+    // 1. TAMPILKAN LINK MILIK HALAMAN TERTENTU
+    public function index(Request $request, Page $page)
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
+        // Security Check: Pastikan halaman ini milik user yang login
+        if ($page->user_id !== Auth::id()) {
+            abort(403);
+        }
 
-        $links = $user->links()
-            ->where('type', 'shortlink')
-            ->latest()
-            ->get();
+        // Ambil link HANYA milik page ini
+        $query = $page->links();
 
-        return view('links.index', compact('links'));
+        // Fitur Search
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('original_url', 'like', "%{$search}%");
+            });
+        }
+
+        // Fitur Sortir
+        $sortColumn = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('direction', 'desc');
+        $query->orderBy($sortColumn, $sortDirection);
+
+        $links = $query->paginate(50)->withQueryString();
+
+        return view('links.index', compact('links', 'page'));
     }
 
-    // Proses memendekkan link
-    public function store(Request $request)
+    // 2. SIMPAN LINK BARU KE HALAMAN
+    public function store(Request $request, Page $page)
     {
-        // 1. Validasi (Sama seperti sebelumnya)
+        // Security Check
+        if ($page->user_id !== Auth::id()) {
+            abort(403);
+        }
+
         $request->validate([
             'original_url' => 'required|url',
-            'custom_code'  => 'nullable|alpha_dash|unique:links,short_code|max:20|not_in:login,register,dashboard,admin,bio,logout',
+            'title'        => 'required|max:50', // Judul Wajib untuk Bio (mis: "Instagram Saya")
         ]);
 
-        // 2. Tentukan Short Code
-        if ($request->filled('custom_code')) {
-            $shortCode = $request->custom_code;
-        } else {
-            do {
-                $shortCode = Str::random(6);
-            } while (Link::where('short_code', $shortCode)->exists());
-        }
+        // Generate Shortcode (Opsional untuk link bio, tapi tetap kita buat unik)
+        do {
+            $shortCode = Str::random(6);
+        } while (Link::where('short_code', $shortCode)->exists());
 
-        // 3. Simpan Data Link ke Database Dulu (Agar punya ID)
-        $link = Auth::user()->links()->create([
+        // Simpan via relasi page
+        $link = $page->links()->create([
             'original_url' => $request->original_url,
+            'title'        => $request->title,
             'short_code'   => $shortCode,
-            'type'         => 'shortlink',
-            'title'        => 'Short Link',
+            'type'         => 'biolink', // Penanda bahwa ini Link Bio
+            'is_active'    => true,
+            'click_count'  => 0,
         ]);
 
-        // --- PROSES GENERATE & SIMPAN QR CODE ---
+        // Generate QR (Opsional, jika ingin setiap tombol punya QR sendiri)
+        $this->generateQr($link);
 
-        // A. Tentukan Path Penyimpanan
-        $fileName = 'qr_' . $link->id . '_' . $shortCode . '.svg';
-        $path = 'qrcodes/' . $fileName;
-
-        // B. Generate QR Code SVG MURNI (String Text)
-        // Kita tidak pakai ->merge() bawaan library karena sering gagal di SVG
-        $qrContent = QrCode::format('svg')
-            ->size(300)
-            ->errorCorrection('H') // Wajib H agar QR tetap terbaca meski tengahnya ditutup
-            ->margin(1)
-            ->generate(url($shortCode));
-
-        // C. Proses "Bedah & Sisip" Logo Manual
-        if (Auth::user()->profile && file_exists(public_path('storage/' . Auth::user()->profile))) {
-
-            // 1. Ambil file gambar profil & Ubah jadi Base64 String
-            $profilePath = public_path('storage/' . Auth::user()->profile);
-            $profileData = file_get_contents($profilePath);
-            $fileType   = pathinfo($profilePath, PATHINFO_EXTENSION);
-            $base64Logo = 'data:image/' . $fileType . ';base64,' . base64_encode($profileData);
-
-            // 2. Buat Tag SVG untuk Logo
-            // Kita buat background putih dulu (rect) biar QR di belakangnya tertutup bersih
-            // Lalu tumpuk dengan gambar (image)
-            // Posisi x=35% y=35% width=30% height=30% (Pas di tengah)
-            $logoTag = '
-                <rect x="35%" y="35%" width="30%" height="30%" fill="#ffffff" />
-                <image x="35%" y="35%" width="30%" height="30%" href="' . $base64Logo . '" />
-            ';
-
-            // 3. Sisipkan tag logo tadi SEBELUM penutup </svg>
-            $qrContent = str_replace('</svg>', $logoTag . '</svg>', $qrContent);
-        }
-
-        // D. Simpan File SVG Final ke Storage
-        Storage::disk('public')->put($path, $qrContent);
-
-        // E. Update Database
-        $link->update(['qr_path' => $path]);
-
-        // ----------------------------------------
-
-        return redirect()->back()->with('success', 'Link berhasil dibuat dan QR Code tersimpan!');
+        return redirect()->back()->with('success', 'Tautan berhasil ditambahkan ke Bio!');
     }
 
-    // Hapus link
+    // 3. HAPUS LINK
     public function destroy($id)
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
+        // Cari link milik user (via Page)
+        // Kita gunakan Auth::user()->pageLinks() atau cari manual
+        $link = Link::where('id', $id)->firstOrFail();
 
-        $link = $user->links()->findOrFail($id);
+        // Pastikan Page pemilik link ini adalah milik user yang login
+        if ($link->page->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if ($link->qr_path && Storage::disk('public')->exists($link->qr_path)) {
+            Storage::disk('public')->delete($link->qr_path);
+        }
+
         $link->delete();
 
-        return redirect()->back()->with('success', 'Link berhasil dihapus.');
+        return redirect()->back()->with('success', 'Tautan dihapus.');
     }
 
-    // Redirect Link
+    // 4. TOGGLE STATUS
+    public function toggleStatus($id)
+    {
+        $link = Link::where('id', $id)->firstOrFail();
+
+        if ($link->page->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $link->update(['is_active' => !$link->is_active]);
+
+        return redirect()->back()->with('success', 'Status tautan diperbarui.');
+    }
+
+    // 5. PUBLIC RESOLVER (Menangani domain.com/username)
     public function resolvePath($path)
     {
-        // 1. CEK APAKAH INI SHORTLINK?
-        $link = Link::where('short_code', $path)->first();
-
-        if ($link) {
-            // Jika ketemu link pendek -> Redirect ke URL asli
+        // A. Cek Shortlink Global dulu (Prioritas)
+        $link = Link::where('short_code', $path)->whereNull('page_id')->first();
+        if ($link && $link->is_active) {
             $link->increment('click_count');
             return redirect()->away($link->original_url);
         }
 
-        // 2. JIKA BUKAN LINK, CEK APAKAH INI USERNAME (BIO)?
-        $user = User::where('username', $path)->first();
+        // B. Cek Halaman Bio (Page Handle)
+        $page = Page::where('handle', $path)->first();
+        if ($page) {
+            $user  = $page->user;
+            // Ambil link bio yang aktif
+            $links = $page->links()->where('is_active', true)->orderBy('created_at', 'desc')->get();
 
-        if ($user) {
-            // Jika ketemu user -> Tampilkan Halaman Bio
-            // Ambil link-link bio milik user tersebut
-            $links = $user->links()
-                ->where('type', 'biolink')
-                ->where('is_active', true)
-                ->latest()
-                ->get();
-
-            // Return view bio public (sama seperti di BioController sebelumnya)
-            return view('bio.public', compact('user', 'links'));
+            return view('bio.public', compact('user', 'page', 'links'));
         }
 
-        // 3. JIKA TIDAK KETEMU KEDUANYA -> 404
         abort(404);
+    }
+
+    // HELPER QR (Sama seperti shortlink tapi optional logo)
+    private function generateQr($link)
+    {
+        if (!Storage::disk('public')->exists('qrcodes')) {
+            Storage::disk('public')->makeDirectory('qrcodes');
+        }
+        $path = 'qrcodes/bio_' . $link->short_code . '.svg';
+
+        $qrContent = QrCode::format('svg')->size(300)->margin(1)->generate(url($link->short_code));
+        Storage::disk('public')->put($path, $qrContent);
+        $link->update(['qr_path' => $path]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        // Cari link berdasarkan ID
+        $link = Link::findOrFail($id);
+
+        // Security Check: Pastikan Page pemilik link ini adalah milik user yang login
+        if ($link->page->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'title'        => 'required|max:50',
+            'original_url' => 'required|url',
+        ]);
+
+        $link->update([
+            'title'        => $request->title,
+            'original_url' => $request->original_url,
+        ]);
+
+        return redirect()->back()->with('success', 'Tautan berhasil diperbarui.');
     }
 }

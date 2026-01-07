@@ -5,28 +5,50 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'LinkApp') }}</title>
 
-        <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700&display=swap" rel="stylesheet" />
 
-        <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex" x-data="{ sidebarOpen: false }"> 
-            
-            <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 hidden md:block">
-                @include('layouts.navigation')
-            </aside>
+        
+        <script>
+            // Script Anti-FOUC (Flash of Unstyled Content) untuk Dark Mode
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        </script>
 
-            <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        <style>
+            [x-cloak] { display: none !important; }
+            body { font-family: 'Plus Jakarta Sans', sans-serif; }
+            .no-scrollbar::-webkit-scrollbar { display: none; }
+        </style>
+    </head>
+    <body class="bg-gray-50 dark:bg-gray-900 font-sans antialiased text-gray-900 dark:text-gray-100">
+        
+        <div x-data="{ sidebarOpen: false }" class="flex h-screen overflow-hidden">
+            
+            @include('layouts.navigation')
+
+            <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
                 
                 @include('layouts.header')
 
-                <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6">
-                    {{ $slot }}
+                <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900">
+                    
+                    @if (isset($header))
+                        <div class="mx-auto px-4 sm:px-6 md:px-8 py-8">
+                            {{ $header }}
+                        </div>
+                    @endif
+
+                    <div class="mx-auto px-4 sm:px-6 md:px-8 pb-10">
+                        {{ $slot }}
+                    </div>
+                    
                 </main>
             </div>
             

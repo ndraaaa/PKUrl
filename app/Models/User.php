@@ -21,7 +21,8 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'username',
-        'profile',
+        'phone',
+        'profile', // Pastikan di controller pakai 'profile' juga (bukan avatar)
         'theme',
         'email',
         'password',
@@ -51,11 +52,27 @@ class User extends Authenticatable
         ];
     }
 
+    // --- RELASI DATA ---
+
+    // 1. User punya banyak Halaman (Bio Page)
+    public function pages()
+    {
+        return $this->hasMany(Page::class);
+    }
+
+    // 2. User punya link yang ada DI DALAM halaman (Has Many Through)
     public function links()
     {
-        return $this->hasMany(Link::class);
+        return $this->hasManyThrough(Link::class, Page::class);
     }
-    
+
+    // 3. [BARU] Link Global (Shortlink Murni yang tidak masuk Page)
+    // Relasi langsung ke tabel links, tapi difilter yang page_id-nya NULL
+    public function globalLinks()
+    {
+        return $this->hasMany(Link::class)->whereNull('page_id');
+    }
+
     /**
      * The "booted" method of the model.
      */
