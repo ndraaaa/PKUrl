@@ -20,6 +20,7 @@ class Link extends Model
         'click_count',
         'is_active',
         'qr_path',
+        'order',
     ];
 
     // Relasi: Link ini milik User siapa?

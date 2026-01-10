@@ -36,6 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/links/{link}', 'destroy')->name('links.destroy');
         Route::patch('/links/{link}/toggle', 'toggleStatus')->name('links.toggle');
         Route::get('/links/{id}/qr', 'generateQrCode')->name('links.qr');
+        Route::post('/links/reorder', 'reorder')->name('links.reorder');
     });
 
     // --- PROFILE USER (Bawaan Breeze) ---

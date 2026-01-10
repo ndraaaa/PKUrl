@@ -49,7 +49,6 @@
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(() => {
-                // Setelah aksi berhasil, refresh list secara background
                 this.fetchResults();
             });
         }

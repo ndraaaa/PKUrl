@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
@@ -24,11 +26,53 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        $credentials = $request->only('email', 'password');
 
-        $request->session()->regenerate();
+        $user = User::where('email', $credentials['email'])->first();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        if ($user) {
+
+            /**
+             * 1. Password SUDAH ter-hash (bcrypt / argon)
+             */
+            if (
+                $this->looksHashed($user->password)
+                && Hash::check($credentials['password'], $user->password)
+            ) {
+
+                if (Hash::needsRehash($user->password)) {
+                    $user->password = Hash::make($credentials['password']);
+                    $user->save();
+                }
+
+                Auth::login($user, $request->boolean('remember'));
+                $request->session()->regenerate();
+
+                return redirect()->intended(route('dashboard', absolute: false));
+            }
+
+            /**
+             * 2. Password legacy (plaintext)
+             */
+            if (
+                !$this->looksHashed($user->password)
+                && $user->password === $credentials['password']
+            ) {
+
+                // Langsung amankan
+                $user->password = Hash::make($credentials['password']);
+                $user->save();
+
+                Auth::login($user, $request->boolean('remember'));
+                $request->session()->regenerate();
+
+                return redirect()->intended(route('dashboard', absolute: false));
+            }
+        }
+
+        return back()->withErrors([
+            'email' => __('auth.failed'),
+        ])->onlyInput('email');
     }
 
     /**
@@ -43,5 +87,17 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    /**
+     * Heuristic check untuk hash bcrypt / argon
+     */
+    private function looksHashed(?string $value): bool
+    {
+        if (!$value) {
+            return false;
+        }
+
+        return preg_match('/^\$(2y|2a|argon2id|argon2i)\$/', $value) === 1;
     }
 }

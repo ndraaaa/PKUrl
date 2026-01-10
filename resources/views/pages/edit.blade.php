@@ -22,7 +22,7 @@
         </div>
     </x-slot>
 
-    <div class="py-6" x-data="{ activeTab: 'links' }">
+    <div class="py-6" x-data="editorPage()">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
             @if (session('success'))
@@ -64,22 +64,7 @@
                         </button>
                     </div>
 
-                    <div x-show="activeTab === 'links'" x-data="{
-                        editModalOpen: false,
-                        editAction: '',
-                        editTitle: '',
-                        editUrl: '',
-                        openEditModal(id, title, url) {
-                            this.editAction = '/links/' + id; // Set URL Action Form
-                            this.editTitle = title;
-                            this.editUrl = url;
-                            this.editModalOpen = true;
-                        }
-                    }"
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 translate-y-2"
-                        x-transition:enter-end="opacity-100 translate-y-0">
-
+                    <div x-show="activeTab === 'links'">
                         <div
                             class="bg-white dark:bg-gray-800 shadow-lg rounded-2xl overflow-hidden mb-6 border border-gray-100 dark:border-gray-700">
                             <div class="p-6">
@@ -107,10 +92,9 @@
                             </div>
                         </div>
 
-                        <div class="space-y-3">
+                        <div class="space-y-3" x-ref="sortableLinks">
                             @forelse($links as $link)
-                                <div
-                                    class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between group hover:border-emerald-300 transition">
+                                <div x-data="{ isActive: {{ $link->is_active ? 'true' : 'false' }} }" x-ref="link{{ $link->id }}" data-id="{{ $link->id }}" class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between group hover:border-emerald-300 transition">
                                     <div class="flex items-center gap-4 overflow-hidden">
                                         <div class="text-gray-300 cursor-move"><svg class="w-5 h-5" fill="none"
                                                 stroke="currentColor" viewBox="0 0 24 24">
@@ -128,17 +112,27 @@
                                             class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-bold mr-2">
                                             {{ $link->click_count }} klik</div>
 
-                                        <form action="{{ route('links.toggle', $link->id) }}" method="POST">
-                                            @csrf @method('PATCH')
-                                            <button
-                                                class="w-8 h-5 rounded-full relative transition-colors duration-200 ease-in-out {{ $link->is_active ? 'bg-emerald-500' : 'bg-gray-300' }}">
-                                                <span
-                                                    class="absolute top-1 left-1 bg-white w-3 h-3 rounded-full transition-transform duration-200 {{ $link->is_active ? 'translate-x-3' : '' }}"></span>
-                                            </button>
-                                        </form>
+                                        <button
+                                            @click="
+                                                const old = isActive;
+                                                isActive = !isActive;
+                                                toggleLink({{ $link->id }}, () => isActive = old);
+                                            "
+                                            :class="isActive ? 'bg-emerald-500' : 'bg-gray-300'"
+                                            class="w-8 h-5 rounded-full relative transition-colors duration-200 ease-in-out">
+
+                                            <span
+                                                :class="isActive ? 'translate-x-3' : ''"
+                                                class="absolute top-1 left-1 bg-white w-3 h-3 rounded-full transition-transform duration-200">
+                                            </span>
+                                        </button>
 
                                         <button
-                                            @click="openEditModal('{{ $link->id }}', '{{ addslashes($link->title) }}', '{{ $link->original_url }}')"
+                                            @click='openEditModal(
+                                                {{ $link->id }},
+                                                @json($link->title),
+                                                @json($link->original_url)
+                                            )'
                                             class="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"
                                             title="Edit">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor"
@@ -149,19 +143,16 @@
                                             </svg>
                                         </button>
 
-                                        <form action="{{ route('links.destroy', $link->id) }}" method="POST"
-                                            onsubmit="return confirm('Hapus?')">
-                                            @csrf @method('DELETE')
-                                            <button
-                                                class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"><svg
-                                                    class="w-5 h-5" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                                    </path>
-                                                </svg></button>
-                                        </form>
+                                        <button
+                                            @click="deleteLink({{ $link->id }})"
+                                            class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+                                            title="Hapus">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                                </path>
+                                            </svg>
+                                        </button>
                                     </div>
                                 </div>
                             @empty
@@ -184,8 +175,17 @@
                                         class="text-gray-400 hover:text-gray-600">✕</button>
                                 </div>
 
-                                <form :action="editAction" method="POST" enctype="multipart/form-data"
-                                    class="p-6 space-y-4">
+                                <form
+                                    :action="editAction"
+                                    method="POST"
+                                    @submit="
+                                        setTimeout(() => {
+                                            editModalOpen = false;
+                                            refreshPreview();
+                                        }, 300);
+                                    "
+                                    class="p-6 space-y-4"
+                                >
                                     @csrf
                                     @method('PUT') <div>
                                         <label
@@ -460,6 +460,121 @@
                     if (defaultDiv) defaultDiv.classList.add('hidden');
                 }
                 reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function editorPage() {
+            return {
+                activeTab: 'links',
+
+                // Modal edit
+                editModalOpen: false,
+                editAction: '',
+                editTitle: '',
+                editUrl: '',
+
+                openEditModal(id, title, url) {
+                    this.editAction = `/links/${id}`;
+                    this.editTitle = title;
+                    this.editUrl = url;
+                    this.editModalOpen = true;
+                },
+
+                closeEditModal() {
+                    this.editModalOpen = false;
+                },
+
+                refreshPreview() {
+                    clearTimeout(this._previewTimer);
+
+                    this._previewTimer = setTimeout(() => {
+                        const iframe = document.getElementById('previewFrame');
+                        if (iframe) {
+                            iframe.contentWindow.location.reload();
+                        }
+                    }, 500);
+                },
+
+                // Toggle aktif/nonaktif link (AJAX)
+                toggleLink(id, rollback) {
+                    fetch(`/links/${id}/toggle`, {
+                        method: 'PATCH',
+                        headers: {
+                            'X-CSRF-TOKEN': document
+                                .querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(() => {
+                        this.refreshPreview(); // 🔥 DI SINI DIPANGGIL
+                    })
+                    .catch(() => {
+                        rollback();
+                        alert('Gagal mengubah status link');
+                    });
+                },
+
+                deleteLink(id) {
+                    if (!confirm('Hapus link ini?')) return;
+
+                    fetch(`/links/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document
+                                .querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(() => {
+                        const el = this.$refs[`link${id}`];
+                        if (el) el.remove();
+
+                        this.refreshPreview();
+                    })
+                    .catch(() => {
+                        alert('Gagal menghapus link');
+                    });
+                },
+
+                initSortable() {
+                    const el = this.$refs.sortableLinks;
+
+                    if (!el) return;
+
+                    Sortable.create(el, {
+                        animation: 150,
+                        handle: '.cursor-move',
+                        ghostClass: 'opacity-50',
+                        onEnd: () => {
+                            this.saveOrder();
+                        }
+                    });
+                },
+
+                saveOrder() {
+                    const ids = Array.from(this.$refs.sortableLinks.children)
+                        .map(el => el.dataset.id);
+
+                    fetch('/links/reorder', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ ids })
+                    })
+                    .then(() => {
+                        this.refreshPreview(); // 🔥 auto refresh preview
+                    })
+                    .catch(() => {
+                        alert('Gagal menyimpan urutan link');
+                    });
+                },
+
+                init() {
+                    this.$nextTick(() => this.initSortable());
+                },
             }
         }
     </script>

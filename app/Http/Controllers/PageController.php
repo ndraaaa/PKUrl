@@ -42,7 +42,9 @@ class PageController extends Controller
         }
 
         // AMBIL LINKS JUGA (Agar bisa dikelola di satu halaman)
-        $links = $page->links()->orderBy('created_at', 'desc')->get();
+        $links = $page->links()
+            ->orderBy('order')
+            ->get();
 
         return view('pages.edit', compact('page', 'links'));
     }

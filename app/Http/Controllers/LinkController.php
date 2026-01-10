@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Facades\DB;
 
 class LinkController extends Controller
 {
@@ -60,14 +61,17 @@ class LinkController extends Controller
             $shortCode = Str::random(6);
         } while (Link::where('short_code', $shortCode)->exists());
 
+        $maxOrder = $page->links()->max('order') ?? 0;
+
         // Simpan via relasi page
         $link = $page->links()->create([
             'original_url' => $request->original_url,
             'title'        => $request->title,
             'short_code'   => $shortCode,
-            'type'         => 'biolink', // Penanda bahwa ini Link Bio
+            'type'         => 'biolink',
             'is_active'    => true,
             'click_count'  => 0,
+            'order'        => $maxOrder + 1,
         ]);
 
         // Generate QR (Opsional, jika ingin setiap tombol punya QR sendiri)
@@ -126,7 +130,10 @@ class LinkController extends Controller
         if ($page) {
             $user  = $page->user;
             // Ambil link bio yang aktif
-            $links = $page->links()->where('is_active', true)->orderBy('created_at', 'desc')->get();
+            $links = $page->links()
+                ->where('is_active', true)
+                ->orderBy('order')
+                ->get();
 
             return view('bio.public', compact('user', 'page', 'links'));
         }
@@ -168,5 +175,24 @@ class LinkController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Tautan berhasil diperbarui.');
+    }
+
+    public function reorder(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            foreach ($request->ids as $index => $id) {
+                Link::where('id', $id)
+                    ->whereHas('page', function ($q) {
+                        $q->where('user_id', Auth::id());
+                    })
+                    ->update(['order' => $index]);
+            }
+        });
+
+        return response()->json(['success' => true]);
     }
 }
