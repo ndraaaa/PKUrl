@@ -1,4 +1,5 @@
 <x-app-layout>
+    <x-slot name="title">Edit Biodata | {{ $page->title }}</x-slot>
     <x-slot name="header">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <h2 class="font-bold text-xl text-gray-800 dark:text-gray-200 leading-tight flex items-center">
@@ -281,24 +282,24 @@
                                 </div>
 
                                 <div class="space-y-3">
-                                    <label
-                                        class="block text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider">Latar
-                                        Belakang Kustom</label>
-
-                                    <div class="relative group">
+                                    <label class="relative group cursor-pointer block">
                                         <div id="dropzone"
-                                            class="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-3xl p-8 transition-all duration-300 group-hover:border-emerald-400 group-hover:bg-emerald-50/30 flex flex-col items-center justify-center text-center overflow-hidden h-48">
+                                            class="relative border-2 border-dashed border-gray-300 dark:border-gray-600 
+                                                rounded-3xl p-8 transition-all duration-300 
+                                                group-hover:border-emerald-400 group-hover:bg-emerald-50/30 
+                                                flex flex-col items-center justify-center text-center 
+                                                overflow-hidden h-48">
 
                                             @if ($page->background_image)
                                                 <img id="bg-preview-img"
                                                     src="{{ asset('storage/' . $page->background_image) }}"
-                                                    class="absolute inset-0 w-full h-full object-cover opacity-20">
+                                                    class="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none">
                                             @else
                                                 <img id="bg-preview-img"
-                                                    class="absolute inset-0 w-full h-full object-cover opacity-20 hidden">
+                                                    class="absolute inset-0 w-full h-full object-cover opacity-20 hidden pointer-events-none">
                                             @endif
 
-                                            <div class="relative z-10">
+                                            <div class="relative z-10 pointer-events-none">
                                                 <div
                                                     class="mx-auto w-12 h-12 mb-3 text-gray-400 group-hover:text-emerald-500 transition-colors">
                                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -308,32 +309,36 @@
                                                         </path>
                                                     </svg>
                                                 </div>
+
                                                 <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
                                                     <span class="text-emerald-600 font-bold">Klik untuk upload</span>
                                                     atau seret gambar ke sini
                                                 </p>
-                                                <p class="text-xs text-gray-400 mt-1">PNG, JPG atau WEBP (Maks. 2MB)
+                                                <p class="text-xs text-gray-400 mt-1">
+                                                    PNG, JPG atau WEBP (Maks. 2MB)
                                                 </p>
                                             </div>
-
-                                            <input type="file" name="background_image"
-                                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                                onchange="previewBg(this)">
                                         </div>
 
-                                        @if ($page->background_image)
-                                            <div
-                                                class="mt-3 flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30">
-                                                <div class="flex items-center text-red-600 dark:text-red-400">
-                                                    <input type="checkbox" name="remove_background" id="remove_bg"
-                                                        class="rounded-md text-red-600 focus:ring-red-500">
-                                                    <label for="remove_bg"
-                                                        class="ml-2 text-xs font-bold uppercase tracking-tight">Hapus
-                                                        gambar latar saat ini</label>
-                                                </div>
+                                        <!-- INPUT FILE -->
+                                        <input type="file"
+                                            name="background_image"
+                                            class="hidden"
+                                            onchange="previewBg(this)">
+                                    </label>
+
+                                    @if ($page->background_image)
+                                        <div
+                                            class="mt-3 flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30">
+                                            <div class="flex items-center text-red-600 dark:text-red-400">
+                                                <input type="checkbox" name="remove_background" id="remove_bg"
+                                                    class="rounded-md text-red-600 focus:ring-red-500">
+                                                <label for="remove_bg"
+                                                    class="ml-2 text-xs font-bold uppercase tracking-tight">Hapus
+                                                    gambar latar saat ini</label>
                                             </div>
-                                        @endif
-                                    </div>
+                                        </div>
+                                    @endif
                                 </div>
 
                                 <div class="space-y-3">

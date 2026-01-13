@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <title>{{ $page->title }} | LinkApp</title>
+    <title>{{ $page->title }} | e-Link</title>
     <meta name="description" content="Kunjungi link bio dari {{ $page->title }}.">
     
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -126,26 +126,46 @@
 
         <div class="w-full space-y-4 px-2">
             @forelse($links as $index => $link)
-                <a href="{{ $link->original_url ?? $link->url }}" target="_blank" rel="noopener noreferrer"
-                   class="block group relative w-full fade-in-up" 
-                   style="animation-delay: {{ ($index + 2) * 100 }}ms;">
+                <a href="{{ route('links.go', $link) }}" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="block group relative w-full fade-in-up"
+                    style="animation-delay: {{ ($index + 2) * 100 }}ms;">
                    
-                    <div class="absolute inset-0 glass-card rounded-2xl transition-all duration-300 group-hover:scale-[1.02] group-hover:bg-white/10 group-hover:border-white/40"></div>
-                    
+                    <div class="absolute inset-0 rounded-2xl bg-white transition-all duration-300 
+                                group-hover:bg-gray-100 group-hover:scale-[1.02] shadow-xl">
+                    </div>
+
                     <div class="relative flex items-center justify-between px-5 py-4">
-                        <div class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-300 {{ $btnIconBg }} {{ $btnHover }}">
-                           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+
+                        <!-- Icon kiri -->
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center 
+                                    bg-gray-100 text-gray-700 transition 
+                                    group-hover:bg-gray-200">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
+                                </path>
+                            </svg>
                         </div>
 
+                        <!-- Text tengah -->
                         <div class="flex-1 text-center px-2">
-                            <span class="font-bold text-white tracking-wide text-shadow-safe">
+                            <span class="font-bold text-gray-900 tracking-wide">
                                 {{ $link->title }}
                             </span>
                         </div>
 
-                        <div class="w-6 text-white/20 group-hover:text-white group-hover:translate-x-1 transition-all duration-300">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        <!-- Arrow kanan -->
+                        <div class="w-6 text-gray-400 group-hover:text-gray-700 
+                                    group-hover:translate-x-1 transition-all duration-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5l7 7-7 7">
+                                </path>
+                            </svg>
                         </div>
+
                     </div>
                 </a>
             @empty
@@ -157,7 +177,7 @@
 
         <div class="mt-auto py-10 text-center fade-in-up" style="animation-delay: 800ms;">
             <a href="/" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md transition text-[10px] font-bold text-white/50 hover:text-white uppercase tracking-widest border border-white/5">
-                Dibuat dengan LinkApp
+                Dibuat dengan e-Link
             </a>
         </div>
     </div>

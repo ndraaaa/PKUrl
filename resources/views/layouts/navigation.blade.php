@@ -4,10 +4,14 @@
     
     <div class="flex items-center justify-center h-16 bg-emerald-950 border-b border-emerald-800 shadow-md flex-shrink-0">
         <div class="flex items-center text-white font-bold text-xl tracking-wider">
-            <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center mr-2 shadow-lg">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+            <div class="flex items-center text-white font-bold text-xl tracking-wider">
+                <img
+                    src="{{ asset('images/logo.png') }}"
+                    alt="e-Link Logo"
+                    class="w-9 h-9 mr-2 rounded-lg object-contain shadow-lg"
+                >
+                e-Link.
             </div>
-            LinkApp.
         </div>
     </div>
 
@@ -39,6 +43,12 @@
                 </svg>
                 <span class="font-medium">Manajemen User</span>
             </a>
+
+            <a href="{{ route('admin.links.index') }}"
+            class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 {{ request()->routeIs('admin.links*') ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/50' : 'text-emerald-100 hover:bg-emerald-800 hover:text-white' }}">
+                <span class="font-medium">🔗 Manajemen Link</span>
+            </a>
+
         @endif
         <div class="border-t border-emerald-800 my-4"></div>
 
@@ -53,7 +63,7 @@
     </nav>
     
     <div class="p-4 bg-emerald-950/50 text-center">
-        <p class="text-xs text-emerald-500 font-mono">v1.2 LinkApp</p>
+        <p class="text-xs text-emerald-500 font-mono">v1.0 e-Link</p>
     </div>
 
 </div>

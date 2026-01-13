@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LinkController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdminLinkController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -46,10 +47,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // --- ADMIN ROUTES ---
     Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function () {
+        // USER MANAGEMENT
         Route::get('/users', [AdminUserController::class, 'index'])->name('users');
+        Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
         Route::get('/users/{id}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
         Route::put('/users/{id}', [AdminUserController::class, 'update'])->name('users.update');
         Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+
+        // LINK MANAGEMENT (GLOBAL)
+        Route::get('/links', [AdminLinkController::class, 'index'])->name('links.index');
+        Route::patch('/links/{link}/toggle', [AdminLinkController::class, 'toggle'])->name('links.toggle');
+        Route::delete('/links/{link}', [AdminLinkController::class, 'destroy'])->name('links.destroy');
     });
 });
 
@@ -57,4 +65,5 @@ require __DIR__ . '/auth.php';
 
 // --- PUBLIC PAGE RESOLVER (Wajib Paling Bawah) ---
 // Menangani domain.com/username atau domain.com/shortcode
+Route::get('/go/{link}', [LinkController::class, 'go'])->name('links.go');
 Route::get('/{path}', [LinkController::class, 'resolvePath'])->name('path.resolve');

@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class AdminUserController extends Controller
 {
@@ -18,6 +18,27 @@ class AdminUserController extends Controller
     }
 
     // 1. EDIT: Tampilkan Form
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:50|alpha_dash|unique:users,username',
+            'password' => 'required|min:3|confirmed',
+        ]);
+
+        User::create([
+            'name' => $request->name,
+            'username' => $request->username,
+            'email' => $request->username . '@local.app', // 🔥 FIX UTAMA
+            'password' => Hash::make($request->password),
+            'role' => 'user',
+        ]);
+
+        return redirect()
+            ->route('admin.users')
+            ->with('success', 'User baru berhasil ditambahkan.');
+    }
+
     public function edit($id)
     {
         $user = User::findOrFail($id);
@@ -30,27 +51,39 @@ class AdminUserController extends Controller
         $user = User::findOrFail($id);
 
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            // Email harus unik, tapi abaikan email milik user ini sendiri
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'role' => ['required', 'in:admin,user'],
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:50|alpha_dash|unique:users,username,' . $user->id,
+            'role' => 'required|in:user,admin',
+            'password' => 'nullable|min:3|confirmed',
+            'profile' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         $user->name = $request->name;
-        $user->email = $request->email;
+        $user->username = $request->username;
         $user->role = $request->role;
 
-        // Jika password diisi, baru kita ubah. Jika kosong, biarkan password lama.
+        // 🔐 Password
         if ($request->filled('password')) {
-            $request->validate([
-                'password' => ['min:8', 'confirmed'],
-            ]);
             $user->password = Hash::make($request->password);
+        }
+
+        // 🖼️ Upload Foto Profil
+        if ($request->hasFile('profile')) {
+
+            // Hapus foto lama
+            if ($user->profile && Storage::disk('public')->exists($user->profile)) {
+                Storage::disk('public')->delete($user->profile);
+            }
+
+            $path = $request->file('profile')->store('profiles', 'public');
+            $user->profile = $path;
         }
 
         $user->save();
 
-        return redirect()->route('admin.users')->with('success', 'Data user berhasil diperbarui.');
+        return redirect()
+            ->route('admin.users.edit', $user->id)
+            ->with('success', 'Profil user berhasil diperbarui.');
     }
 
     // 3. DESTROY: Hapus User

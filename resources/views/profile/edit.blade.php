@@ -1,4 +1,5 @@
 <x-app-layout>
+    <x-slot name="title">Edit Profile</x-slot>
     <div class="py-12 bg-gray-50 dark:bg-gray-950 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             

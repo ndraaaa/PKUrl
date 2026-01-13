@@ -141,6 +141,14 @@ class LinkController extends Controller
         abort(404);
     }
 
+    public function go(Link $link)
+    {
+        $link->increment('click_count');
+
+        return redirect()->away($link->original_url);
+    }
+
+
     // HELPER QR (Sama seperti shortlink tapi optional logo)
     private function generateQr($link)
     {

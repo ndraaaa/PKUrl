@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Masuk - LinkApp</title>
+    <title>Masuk - e-Link</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700&display=swap" rel="stylesheet" />
@@ -25,10 +25,12 @@
         <div class="absolute inset-0 bg-gradient-to-t from-emerald-900 via-emerald-900/80 to-transparent z-0"></div>
 
         <div class="relative z-10 flex items-center space-x-3">
-            <div class="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-900/50">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-            </div>
-            <span class="text-2xl font-bold tracking-tight">LinkApp.</span>
+            <img 
+                src="{{ asset('images/logo.png') }}" 
+                alt="e-Link Logo"
+                class="w-10 h-10 rounded-lg shadow-lg shadow-emerald-900/50 object-contain"
+            />
+            <span class="text-2xl font-bold tracking-tight">e-Link.</span>
         </div>
 
         <div class="relative z-10 max-w-lg">
@@ -39,7 +41,7 @@
         </div>
 
         <div class="relative z-10 text-xs text-emerald-300 font-medium tracking-wide uppercase">
-            &copy; {{ date('Y') }} LinkApp Systems.
+            &copy; {{ date('Y') }} e-Link Systems.
         </div>
     </div>
 
@@ -49,9 +51,14 @@
         </div>
         <div class="absolute inset-0 bg-gradient-to-b from-emerald-800/50 to-emerald-900 z-10"></div>
         
-        <div class="relative z-20 pt-10 text-center text-white">
-            <span class="text-2xl font-bold tracking-tight">LinkApp.</span>
+        <div class="relative z-20 pt-10 flex justify-center">
+            <img 
+                src="{{ asset('images/logo.png') }}" 
+                alt="e-Link Logo"
+                class="w-12 h-12 object-contain"
+            >
         </div>
+
     </div>
 
     <div class="w-full lg:w-1/2 z-10 flex flex-col items-center lg:h-full lg:overflow-y-auto custom-scrollbar">
@@ -62,7 +69,7 @@
                 
                 <div class="text-center lg:text-left mb-8">
                     <h2 class="text-2xl lg:text-3xl font-bold text-gray-900">Masuk Akun 👋</h2>
-                    <p class="mt-2 text-sm text-gray-500">Masukkan email dan password Anda.</p>
+                    <p class="mt-2 text-sm text-gray-500">Masukkan username dan password Anda.</p>
                 </div>
 
                 <x-auth-session-status class="mb-4" :status="session('status')" />
@@ -71,16 +78,22 @@
                     @csrf
 
                     <div>
-                        <label for="email" class="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
+                        <label for="username" class="block text-sm font-semibold text-gray-700 mb-1.5">Username</label>
                         <div class="relative rounded-lg shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-emerald-600 bg-white">
                             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                 <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" /></svg>
                             </div>
-                            <input type="email" name="email" id="email" autocomplete="email" required autofocus
-                                class="block w-full border-0 bg-transparent py-3 pl-10 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6" 
-                                placeholder="nama@email.com" value="{{ old('email') }}">
+                            <input type="text"
+                                name="username"
+                                id="username"
+                                required
+                                autofocus
+                                autocomplete="username"
+                                placeholder="username"
+                                value="{{ old('username') }}"
+                                class="block w-full border-0 bg-transparent py-3 pl-10 text-gray-900 focus:ring-0 sm:text-sm">
                         </div>
-                        <x-input-error :messages="$errors->get('email')" class="mt-1" />
+                        <x-input-error :messages="$errors->get('username')" class="mt-1" />
                     </div>
 
                     <div>
@@ -116,15 +129,15 @@
                         Masuk Dashboard
                     </button>
 
-                    <p class="mt-6 text-center text-sm text-gray-500">
+                    {{-- <p class="mt-6 text-center text-sm text-gray-500">
                         Belum punya akun?
                         <a href="{{ route('register') }}" class="font-bold text-emerald-600 hover:text-emerald-500">Daftar Gratis</a>
-                    </p>
+                    </p> --}}
                 </form>
             </div>
 
             <div class="mt-8 lg:hidden text-center pb-8">
-                <p class="text-xs text-gray-400">&copy; 2026 LinkApp Systems.</p>
+                <p class="text-xs text-gray-400">&copy; 2026 e-Link Systems.</p>
             </div>
 
         </div>

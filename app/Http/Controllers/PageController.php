@@ -60,8 +60,8 @@ class PageController extends Controller
             'handle' => ['required', 'alpha_dash', 'unique:pages,handle,' . $page->id],
             'title'  => 'required|max:50',
             'theme'  => 'required',
-            'avatar' => 'nullable|image|max:2048',
-            'background_image' => 'nullable|image|max:3072',
+            'avatar' => 'nullable|image|max:5120',
+            'background_image' => 'nullable|image|max:5120',
         ]);
 
         $data = [

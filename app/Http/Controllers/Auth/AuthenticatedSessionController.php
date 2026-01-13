@@ -26,24 +26,17 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $credentials = $request->only('email', 'password');
+        $credentials = $request->only('username', 'password');
 
-        $user = User::where('email', $credentials['email'])->first();
+        $user = User::where('username', $credentials['username'])->first();
 
         if ($user) {
 
-            /**
-             * 1. Password SUDAH ter-hash (bcrypt / argon)
-             */
+            // 1️⃣ Password sudah ter-hash
             if (
                 $this->looksHashed($user->password)
                 && Hash::check($credentials['password'], $user->password)
             ) {
-
-                if (Hash::needsRehash($user->password)) {
-                    $user->password = Hash::make($credentials['password']);
-                    $user->save();
-                }
 
                 Auth::login($user, $request->boolean('remember'));
                 $request->session()->regenerate();
@@ -51,15 +44,13 @@ class AuthenticatedSessionController extends Controller
                 return redirect()->intended(route('dashboard', absolute: false));
             }
 
-            /**
-             * 2. Password legacy (plaintext)
-             */
+            // 2️⃣ Password legacy (plaintext)
             if (
                 !$this->looksHashed($user->password)
                 && $user->password === $credentials['password']
             ) {
 
-                // Langsung amankan
+                // Re-hash password
                 $user->password = Hash::make($credentials['password']);
                 $user->save();
 
@@ -71,8 +62,8 @@ class AuthenticatedSessionController extends Controller
         }
 
         return back()->withErrors([
-            'email' => __('auth.failed'),
-        ])->onlyInput('email');
+            'username' => __('auth.failed'),
+        ])->onlyInput('username');
     }
 
     /**

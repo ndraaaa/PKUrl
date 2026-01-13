@@ -29,6 +29,11 @@ class Link extends Model
         return $this->belongsTo(Page::class);
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     /**
      * The "booted" method of the model.
      * Disini kita pasang logika otomatisnya.

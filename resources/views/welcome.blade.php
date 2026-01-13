@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PKUrl - Satu Link untuk Segalanya</title>
+    <title>e-Link - Satu Link untuk Segalanya</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
@@ -34,8 +34,15 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center">
-                    <a href="#" class="text-2xl font-bold text-white">
-                        PKUrl
+                    <a href="#" class="flex items-center gap-2 text-white">
+                        <img 
+                            src="{{ asset('images/logo.png') }}" 
+                            alt="e-Link Logo"
+                            class="h-8 w-auto"
+                        >
+                        <span class="text-2xl font-bold">
+                            e-Link
+                        </span>
                     </a>
                 </div>
 
@@ -48,11 +55,11 @@
                             <a href="{{ url('/dashboard') }}" class="text-white font-semibold hover:text-gray-200">Dashboard</a>
                         @else
                             <a href="{{ route('login') }}" class="text-white font-medium hover:text-gray-200">Masuk</a>
-                            @if (Route::has('register'))
+                            {{-- @if (Route::has('register'))
                                 <a href="{{ route('register') }}" class="px-5 py-2.5 rounded-full bg-white text-gray-900 font-semibold shadow hover:bg-gray-100 transition transform hover:-translate-y-0.5">
                                     Daftar Gratis
                                 </a>
-                            @endif
+                            @endif --}}
                         @endauth
                     @endif
                 </div>
@@ -68,7 +75,7 @@
         <div x-show="open" class="md:hidden bg-white border-t border-gray-100 p-4 space-y-2 shadow-lg">
             <a href="#features" class="block text-gray-600 hover:text-indigo-600">Fitur</a>
             <a href="{{ route('login') }}" class="block text-gray-600 hover:text-indigo-600">Masuk</a>
-            <a href="{{ route('register') }}" class="block font-bold text-indigo-600">Daftar Sekarang</a>
+            {{-- <a href="{{ route('register') }}" class="block font-bold text-indigo-600">Daftar Sekarang</a> --}}
         </div>
     </nav>
 
@@ -91,15 +98,15 @@
                 Gabungkan Shortlink, Halaman Bio yang cantik, dan QR Code kustom dalam satu platform. Tingkatkan branding Anda sekarang juga.
             </p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="{{ route('register') }}" class="px-8 py-4 rounded-full bg-indigo-600 text-white font-bold text-lg shadow-xl hover:bg-indigo-500 transition transform hover:-translate-y-1 ring-2 ring-indigo-600 ring-offset-2 ring-offset-black">
-                    Mulai Sekarang - Gratis
+                <a href="{{ route('login') }}" class="px-8 py-4 rounded-full bg-indigo-600 text-white font-bold text-lg shadow-xl hover:bg-indigo-500 transition transform hover:-translate-y-1 ring-2 ring-indigo-600 ring-offset-2 ring-offset-black">
+                    Mulai Sekarang
                 </a>
                 <a href="#features" class="px-8 py-4 rounded-full bg-transparent text-white font-bold text-lg border-2 border-white hover:bg-white/10 transition">
                     Pelajari Fitur
                 </a>
             </div>
 
-            <div class="mt-16 relative mx-auto w-full max-w-4xl rounded-xl shadow-2xl border-4 border-white/20 bg-black/50 backdrop-blur-sm overflow-hidden transform hover:scale-[1.01] transition duration-500">
+            {{-- <div class="mt-16 relative mx-auto w-full max-w-4xl rounded-xl shadow-2xl border-4 border-white/20 bg-black/50 backdrop-blur-sm overflow-hidden transform hover:scale-[1.01] transition duration-500">
                 <div class="aspect-w-16 aspect-h-9 bg-black/40 flex items-center justify-center text-gray-400">
                     <div class="p-10 text-center">
                         <svg class="w-20 h-20 mx-auto mb-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -107,7 +114,7 @@
                         <p class="text-sm text-white/40">(Ganti ini dengan screenshot asli)</p>
                     </div>
                 </div>
-            </div>
+            </div> --}}
         </div>
     </section>
 
@@ -235,8 +242,8 @@
             <p class="text-lg text-gray-400 mb-10">
                 Bergabunglah dengan pengguna lain yang telah mengelola link mereka dengan lebih cerdas, rapi, dan profesional.
             </p>
-            <a href="{{ route('register') }}" class="inline-block px-8 py-4 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-500 transition transform hover:scale-105">
-                Buat Akun Gratis Sekarang
+            <a href="{{ route('login') }}" class="inline-block px-8 py-4 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-500 transition transform hover:scale-105">
+                Gunakan aplikasi sekarang
             </a>
         </div>
     </section>
@@ -245,8 +252,8 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-4 md:mb-0">
-                    <span class="text-2xl font-bold text-gray-900">PKUrl</span>
-                    <p class="text-sm text-gray-500 mt-2">&copy; {{ date('Y') }} PKUrl. Dibuat dengan Laravel & ❤️.</p>
+                    <span class="text-2xl font-bold text-gray-900">e-Link</span>
+                    <p class="text-sm text-gray-500 mt-2">&copy; {{ date('Y') }} e-Link. Dibuat dengan Laravel & ❤️.</p>
                 </div>
                 <div class="flex space-x-6">
                     <a href="#" class="text-gray-400 hover:text-gray-900">Tentang</a>

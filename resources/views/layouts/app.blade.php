@@ -1,57 +1,69 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'LinkApp') }}</title>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700&display=swap" rel="stylesheet" />
+    <title>{{ $title ?? config('app.name', 'e-Link') }}</title>
 
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-        <script>
-            // Script Anti-FOUC (Flash of Unstyled Content) untuk Dark Mode
-            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        </script>
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700&display=swap" rel="stylesheet" />
 
-        <style>
-            [x-cloak] { display: none !important; }
-            body { font-family: 'Plus Jakarta Sans', sans-serif; }
-            .no-scrollbar::-webkit-scrollbar { display: none; }
-        </style>
-    </head>
-    <body class="bg-gray-50 dark:bg-gray-900 font-sans antialiased text-gray-900 dark:text-gray-100">
-        
-        <div x-data="{ sidebarOpen: false }" class="flex h-screen overflow-hidden">
-            
-            @include('layouts.navigation')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script>
+        // Script Anti-FOUC (Flash of Unstyled Content) untuk Dark Mode
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia(
+                '(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 
-            <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
-                
-                @include('layouts.header')
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
 
-                <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900">
-                    
-                    @if (isset($header))
-                        <div class="mx-auto px-4 sm:px-6 md:px-8 py-8">
-                            {{ $header }}
-                        </div>
-                    @endif
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
 
-                    <div class="mx-auto px-4 sm:px-6 md:px-8 pb-10">
-                        {{ $slot }}
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 font-sans antialiased text-gray-900 dark:text-gray-100">
+
+    <div x-data="{ sidebarOpen: false }" class="flex h-screen overflow-hidden">
+
+        @include('layouts.navigation')
+
+        <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
+
+            @include('layouts.header')
+
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900">
+
+                @if (isset($header))
+                    <div class="mx-auto px-4 sm:px-6 md:px-8 py-8">
+                        {{ $header }}
                     </div>
-                    
-                </main>
-            </div>
-            
+                @endif
+
+                <div class="mx-auto px-4 sm:px-6 md:px-8 pb-10">
+                    {{ $slot }}
+                </div>
+
+            </main>
         </div>
-    </body>
+
+    </div>
+</body>
+
 </html>

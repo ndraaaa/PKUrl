@@ -7,7 +7,7 @@
             </svg>
         </button>
 
-        <span class="text-lg font-bold text-gray-800 dark:text-white lg:hidden">LinkApp</span>
+        <span class="text-lg font-bold text-gray-800 dark:text-white lg:hidden">e-Link</span>
     </div>
 
     <div class="flex items-center gap-4">

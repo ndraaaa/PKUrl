@@ -1,4 +1,5 @@
 <x-app-layout>
+    <x-slot name="title">Manajemen Users</x-slot>
     <x-slot name="header">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between shadow-sm">
             <h2 class="font-bold text-2xl text-emerald-800 dark:text-emerald-200 leading-tight">
@@ -24,7 +25,7 @@
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-emerald-500">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </span>
-                    <input x-model="search" type="text" placeholder="Cari nama atau email..." 
+                    <input x-model="search" type="text" placeholder="Cari nama atau username..." 
                         class="block w-full pl-10 pr-3 py-2 border border-emerald-200 dark:border-emerald-800 rounded-xl leading-5 bg-emerald-50/30 dark:bg-gray-900 text-emerald-900 dark:text-emerald-100 placeholder-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition duration-150 ease-in-out">
                 </div>
 
@@ -39,13 +40,94 @@
                 </div>
             </div>
 
+            <div x-data="{ openAdd: false }" class="flex justify-end">
+                <button @click="openAdd = true"
+                    class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl shadow-lg font-bold transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Tambah User
+                </button>
+
+                <!-- MODAL -->
+                <div x-show="openAdd" x-transition.opacity
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+                    style="display: none">
+
+                    <div @click.away="openAdd = false"
+                        class="bg-white dark:bg-gray-800 w-full max-w-md rounded-3xl shadow-2xl border border-emerald-100 dark:border-emerald-900/30">
+
+                        <!-- HEADER -->
+                        <div class="px-6 py-4 border-b border-emerald-100 dark:border-emerald-900/30 flex justify-between items-center">
+                            <h3 class="font-bold text-lg text-emerald-700 dark:text-emerald-400">
+                                Tambah User Baru
+                            </h3>
+                            <button @click="openAdd = false" class="text-gray-400 hover:text-red-500">✕</button>
+                        </div>
+
+                        <!-- FORM -->
+                        <form method="POST" action="{{ route('admin.users.store') }}" class="p-6 space-y-5">
+                            @csrf
+
+                            <!-- NAMA -->
+                            <div>
+                                <label class="block text-sm font-bold text-emerald-700 mb-1">Nama Lengkap</label>
+                                <input type="text" name="name" required
+                                    class="w-full rounded-xl border-emerald-200 dark:bg-gray-900 focus:ring-emerald-500"
+                                    placeholder="Nama lengkap">
+                            </div>
+
+                            <!-- USERNAME -->
+                            <div>
+                                <label class="block text-sm font-bold text-emerald-700 mb-1">Username</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-3 flex items-center text-emerald-400 font-bold">@</span>
+                                    <input type="text" name="username" required
+                                        class="pl-8 w-full rounded-xl border-emerald-200 dark:bg-gray-900 focus:ring-emerald-500"
+                                        placeholder="username">
+                                </div>
+                            </div>
+
+                            <!-- PASSWORD -->
+                            <div>
+                                <label class="block text-sm font-bold text-emerald-700 mb-1">Password</label>
+                                <input type="password" name="password" required
+                                    class="w-full rounded-xl border-emerald-200 dark:bg-gray-900 focus:ring-emerald-500"
+                                    placeholder="Masukan password">
+                            </div>
+
+                            <!-- KONFIRMASI -->
+                            <div>
+                                <label class="block text-sm font-bold text-emerald-700 mb-1">Konfirmasi Password</label>
+                                <input type="password" name="password_confirmation" required
+                                    class="w-full rounded-xl border-emerald-200 dark:bg-gray-900 focus:ring-emerald-500"
+                                    placeholder="Ulangi password">
+                            </div>
+
+                            <!-- ACTION -->
+                            <div class="pt-4 flex justify-end gap-3">
+                                <button type="button" @click="openAdd = false"
+                                    class="px-4 py-2 text-gray-500 font-bold hover:text-gray-700">
+                                    Batal
+                                </button>
+                                <button type="submit"
+                                    class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg transition">
+                                    Simpan User
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl shadow-emerald-900/5 sm:rounded-2xl border border-emerald-100 dark:border-emerald-900/20">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-emerald-100 dark:divide-emerald-900/50">
                         <thead class="bg-emerald-50/50 dark:bg-emerald-900/20">
                             <tr>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Pengguna</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Email</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Username</th>
                                 <th class="px-6 py-4 text-center text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Role</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Bergabung</th>
                                 <th class="px-6 py-4 text-right text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Aksi</th>
@@ -56,14 +138,26 @@
                                 <tr class="hover:bg-emerald-50/30 dark:hover:bg-emerald-900/10 transition duration-150">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <div class="h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold shadow-md shadow-emerald-500/20" x-text="user.name.charAt(0)"></div>
+                                            <div class="h-10 w-10 flex-shrink-0 rounded-full overflow-hidden shadow-md border border-emerald-200 bg-emerald-100">
+                                                <template x-if="user.profile">
+                                                    <img :src="user.profile" alt="Profile"
+                                                        class="w-full h-full object-cover">
+                                                </template>
+                                                <template x-if="!user.profile">
+                                                    <div class="w-full h-full flex items-center justify-center 
+                                                                bg-gradient-to-br from-emerald-400 to-emerald-600 
+                                                                text-white font-bold">
+                                                        <span x-text="user.name.charAt(0)"></span>
+                                                    </div>
+                                                </template>
+                                            </div>
                                             <div class="ml-4">
                                                 <div class="text-sm font-semibold text-gray-900 dark:text-white" x-text="user.name"></div>
                                                 <div class="text-[10px] text-emerald-500 font-mono">ID: #<span x-text="user.id"></span></div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300" x-text="user.email"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300" x-text="user.username"></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
                                         <span :class="user.role === 'admin' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-600 border-blue-100'" 
                                               class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border" 
@@ -116,9 +210,10 @@
                     @foreach($users as $user)
                     {
                         id: {{ $user->id }},
-                        name: "{{ $user->name }}",
-                        email: "{{ $user->email }}",
-                        role: "{{ $user->role }}",
+                        name: @json($user->name),
+                        username: @json($user->username),
+                        role: @json($user->role),
+                        profile: @json($user->profile ? asset('storage/'.$user->profile) : null),
                         created_at: "{{ $user->created_at }}",
                         formatted_date: "{{ $user->created_at->format('d M Y') }}"
                     },
@@ -127,7 +222,7 @@
                 get filteredUsers() {
                     let filtered = this.users.filter(user => {
                         return user.name.toLowerCase().includes(this.search.toLowerCase()) ||
-                               user.email.toLowerCase().includes(this.search.toLowerCase());
+                            user.username.toLowerCase().includes(this.search.toLowerCase());
                     });
 
                     // Sorting Logic
