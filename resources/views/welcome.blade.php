@@ -128,9 +128,16 @@
                 </p>
             </div>
 
-            <div class="flex flex-wrap justify-center gap-8 items-center">
+            <div class="
+                flex gap-8 items-center
+                overflow-x-auto md:overflow-visible
+                flex-nowrap md:flex-wrap
+                snap-x snap-mandatory
+                px-4
+                scrollbar-hide
+            ">
                 
-                <div class="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[600px] w-[300px] shadow-xl flex flex-col justify-between p-4 transform hover:-translate-y-4 transition duration-500">
+                <div class="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[600px] w-[300px] shadow-xl flex flex-col justify-between p-4 transform hover:-translate-y-4 transition duration-500 snap-center shrink-0">
                     <div class="h-[32px] w-[3px] bg-gray-800 absolute -left-[17px] top-[72px] rounded-l-lg"></div>
                     <div class="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[124px] rounded-l-lg"></div>
                     <div class="h-[64px] w-[3px] bg-gray-800 absolute -right-[17px] top-[142px] rounded-r-lg"></div>
@@ -147,7 +154,7 @@
                     </div>
                 </div>
 
-                <div class="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[650px] w-[320px] shadow-2xl flex flex-col justify-between p-4 transform hover:-translate-y-4 transition duration-500 z-10">
+                <div class="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[650px] w-[320px] shadow-2xl flex flex-col justify-between p-4 transform hover:-translate-y-4 transition duration-500 z-10 snap-center shrink-0">
                     <div class="h-[32px] w-[3px] bg-gray-800 absolute -left-[17px] top-[72px] rounded-l-lg"></div>
                     <div class="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[124px] rounded-l-lg"></div>
                     <div class="h-[64px] w-[3px] bg-gray-800 absolute -right-[17px] top-[142px] rounded-r-lg"></div>
@@ -175,7 +182,7 @@
                     </div>
                 </div>
 
-                <div class="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[600px] w-[300px] shadow-xl flex flex-col justify-between p-4 transform hover:-translate-y-4 transition duration-500">
+                <div class="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[600px] w-[300px] shadow-xl flex flex-col justify-between p-4 transform hover:-translate-y-4 transition duration-500 snap-center shrink-0">
                     <div class="h-[32px] w-[3px] bg-gray-800 absolute -left-[17px] top-[72px] rounded-l-lg"></div>
                     <div class="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[124px] rounded-l-lg"></div>
                     <div class="h-[64px] w-[3px] bg-gray-800 absolute -right-[17px] top-[142px] rounded-r-lg"></div>
