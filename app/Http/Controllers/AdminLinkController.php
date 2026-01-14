@@ -12,10 +12,27 @@ class AdminLinkController extends Controller
         $baseQuery = Link::query()
             ->when($request->search, function ($q) use ($request) {
                 $search = $request->search;
+
                 $q->where(function ($qq) use ($search) {
+
+                    // 🔗 field di tabel links
                     $qq->where('title', 'like', "%{$search}%")
                         ->orWhere('original_url', 'like', "%{$search}%")
                         ->orWhere('short_code', 'like', "%{$search}%");
+
+                    $qq->orWhereHas('page', function ($page) use ($search) {
+                        $page->where('title', 'like', "%{$search}%");
+                    });
+
+                    $qq->orWhereHas('page.user', function ($user) use ($search) {
+                        $user->where('name', 'like', "%{$search}%")
+                            ->orWhere('username', 'like', "%{$search}%");
+                    });
+
+                    $qq->orWhereHas('user', function ($user) use ($search) {
+                        $user->where('name', 'like', "%{$search}%")
+                            ->orWhere('username', 'like', "%{$search}%");
+                    });
                 });
             })
             ->latest();
