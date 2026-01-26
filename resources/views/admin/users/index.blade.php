@@ -82,9 +82,9 @@
                             <div>
                                 <label class="block text-sm font-bold text-emerald-700 mb-1">Username</label>
                                 <div class="relative">
-                                    <span class="absolute inset-y-0 left-3 flex items-center text-emerald-400 font-bold">@</span>
+                                    <span class="absolute inset-y-0 left-3 flex items-center text-emerald-400 font-bold ml-3">@</span>
                                     <input type="text" name="username" required
-                                        class="pl-8 w-full rounded-xl border-emerald-200 dark:bg-gray-900 focus:ring-emerald-500"
+                                        class="pl-9 w-full rounded-xl border-emerald-200 dark:bg-gray-900 focus:ring-emerald-500"
                                         placeholder="username">
                                 </div>
                             </div>

@@ -121,7 +121,7 @@ class ShortlinkController extends Controller
             ->generate(url($link->short_code));
 
         // 3. Tentukan Lokasi Logo Aplikasi
-        $logoPath = public_path('images/logo.png');
+        $logoPath = public_path('images/logo_pku.png');
 
         // 4. Proses Penyisipan Logo
         if (file_exists($logoPath)) {

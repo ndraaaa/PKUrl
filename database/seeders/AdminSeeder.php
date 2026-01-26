@@ -12,7 +12,8 @@ class AdminSeeder extends Seeder
     {
         User::create([
             'name' => 'Super Admin',
-            'email' => 'admin@linkapp.com',
+            'username' => 'superadmin',
+            'email' => 'admin@elink.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
         ]);
