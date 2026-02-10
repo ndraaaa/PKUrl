@@ -1,69 +1,59 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\LinkController;
-use App\Http\Controllers\PageController;
-use App\Http\Controllers\AdminUserController;
-use App\Http\Controllers\AdminLinkController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\PageLinkController;
+use App\Http\Controllers\ShortLinkController;
+use App\Http\Controllers\RedirectController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\DashboardController;
+
+Route::view('/', 'welcome')->name('home');
+Route::post('/guest/shorten', [ShortLinkController::class, 'storePublic'])->name('guest.shorten');
+Route::get('/guest/qr/{shortCode}', [ShortLinkController::class, 'showPublicQr'])->name('guest.qr');
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // --- DASHBOARD & PAGES (Inti Multi-Halaman) ---
-    Route::get('/dashboard', [PageController::class, 'index'])->name('dashboard'); // Daftar Halaman
-    Route::post('/pages', [PageController::class, 'store'])->name('pages.store'); // Buat Halaman Baru
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/chart-data', [DashboardController::class, 'getChartData'])->name('dashboard.chart');
 
-    // Editor Tampilan Halaman (Pengganti BioController lama)
-    Route::get('/dashboard/pages/{page}/edit', [PageController::class, 'edit'])->name('pages.edit');
-    Route::put('/dashboard/pages/{page}', [PageController::class, 'update'])->name('pages.update');
+    Route::get('/pages', [PageController::class, 'index'])->name('pages.index');
+
+    // --- A. CRUD Halaman (Page) ---
+    Route::post('/pages', [PageController::class, 'store'])->name('pages.store');
+    Route::get('/pages/{page}/edit', [PageController::class, 'edit'])->name('pages.edit');
+    Route::put('/pages/{page}', [PageController::class, 'update'])->name('pages.update');
     Route::delete('/pages/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
 
-    Route::controller(\App\Http\Controllers\ShortlinkController::class)->prefix('shortlinks')->name('shortlinks.')->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::post('/', 'store')->name('store');
-        Route::delete('/{link}', 'destroy')->name('destroy');
-        Route::patch('/{link}/toggle', 'toggle')->name('toggle');
-    });
+    // --- B. PAGE LINKS (TOMBOL DI DALAM BIO) ---
+    Route::post('/pages/{page}/links', [PageLinkController::class, 'store'])->name('page-links.store');
+    Route::put('/links/{link}', [PageLinkController::class, 'update'])->name('page-links.update');
+    Route::delete('/links/{link}', [PageLinkController::class, 'destroy'])->name('page-links.destroy');
+    Route::post('/links/reorder', [PageLinkController::class, 'reorder'])->name('links.reorder');
 
-    // --- KELOLA LINK (Sekarang Terikat pada Page) ---
-    Route::controller(LinkController::class)->group(function () {
-        Route::get('/dashboard/pages/{page}/links', 'index')->name('links.index');
-        Route::post('/dashboard/pages/{page}/links', 'store')->name('links.store');
-        Route::put('/links/{link}', 'update')->name('links.update');
-        Route::delete('/links/{link}', 'destroy')->name('links.destroy');
-        Route::patch('/links/{link}/toggle', 'toggleStatus')->name('links.toggle');
-        Route::get('/links/{id}/qr', 'generateQrCode')->name('links.qr');
-        Route::post('/links/reorder', 'reorder')->name('links.reorder');
-    });
+    // --- C. SHORTLINK (LINK PENDEK BIASA) ---
+    Route::resource('shortlinks', ShortLinkController::class)->except(['create', 'show', 'edit']);
+    Route::get('/shortlinks/{link}/qr-code', [ShortLinkController::class, 'generateQrWithLogo'])->name('shortlinks.qr');
+    Route::post('/shortlinks/bulk-destroy', [ShortLinkController::class, 'bulkDestroy'])->name('shortlinks.bulk_destroy');
 
-    // --- PROFILE USER (Bawaan Breeze) ---
+    // --- D. PROFILE USER (Setting Akun) ---
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // --- ADMIN ROUTES ---
+    // --- E. ADMIN AREA ---
     Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function () {
-        // USER MANAGEMENT
-        Route::get('/users', [AdminUserController::class, 'index'])->name('users');
+        Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
         Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
-        Route::get('/users/{id}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
-        Route::put('/users/{id}', [AdminUserController::class, 'update'])->name('users.update');
-        Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('users.destroy');
-
-        // LINK MANAGEMENT (GLOBAL)
-        Route::get('/links', [AdminLinkController::class, 'index'])->name('links.index');
-        Route::patch('/links/{link}/toggle', [AdminLinkController::class, 'toggle'])->name('links.toggle');
-        Route::delete('/links/{link}', [AdminLinkController::class, 'destroy'])->name('links.destroy');
+        Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+        Route::get('/links', [App\Http\Controllers\AdminLinkController::class, 'index'])->name('links.index');
+        Route::post('/links/{link}/toggle', [App\Http\Controllers\AdminLinkController::class, 'toggleStatus'])->name('links.toggle');
+        Route::delete('/links/{link}', [App\Http\Controllers\AdminLinkController::class, 'destroy'])->name('links.destroy');
     });
 });
 
 require __DIR__ . '/auth.php';
-
-// --- PUBLIC PAGE RESOLVER (Wajib Paling Bawah) ---
-// Menangani domain.com/username atau domain.com/shortcode
-Route::get('/go/{link}', [LinkController::class, 'go'])->name('links.go');
-Route::get('/{path}', [LinkController::class, 'resolvePath'])->name('path.resolve');
+Route::get('/{path}', [RedirectController::class, 'handle'])->name('public.redirect');

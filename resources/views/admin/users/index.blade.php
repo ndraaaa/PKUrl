@@ -1,236 +1,294 @@
-<x-app-layout>
-    <x-slot name="title">Manajemen Users</x-slot>
-    <x-slot name="header">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between shadow-sm">
-            <h2 class="font-bold text-2xl text-emerald-800 dark:text-emerald-200 leading-tight">
-                {{ __('Manajemen User') }}
-            </h2>
-            <p class="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
-                Total: {{ count($users) }} Pengguna Terdaftar
-            </p>
-        </div>
-    </x-slot>
+<x-app-layout title="User Management" desc="Kelola pengguna dan hak akses sistem.">
 
-    <div class="py-12" x-data="userManagement()">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            
-            @if (session('success'))
-                <div class="bg-emerald-100 border-l-4 border-emerald-500 text-emerald-700 p-4 rounded shadow-sm animate-bounce" role="alert">
-                    <p class="font-bold text-sm">{{ session('success') }}</p>
-                </div>
-            @endif
+    <div class="py-8" x-data="userHandler()">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-900/30 flex flex-col md:flex-row gap-4 justify-between">
-                <div class="relative flex-1">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-emerald-500">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    </span>
-                    <input x-model="search" type="text" placeholder="Cari nama atau username..." 
-                        class="block w-full pl-10 pr-3 py-2 border border-emerald-200 dark:border-emerald-800 rounded-xl leading-5 bg-emerald-50/30 dark:bg-gray-900 text-emerald-900 dark:text-emerald-100 placeholder-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition duration-150 ease-in-out">
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <label class="text-sm font-medium text-emerald-700 dark:text-emerald-300">Urutkan:</label>
-                    <select x-model="sortBy" class="rounded-xl border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-gray-900 text-sm focus:ring-emerald-500 focus:border-emerald-500">
-                        <option value="name_asc">Nama (A-Z)</option>
-                        <option value="name_desc">Nama (Z-A)</option>
-                        <option value="newest">Terbaru</option>
-                        <option value="oldest">Terlama</option>
-                    </select>
-                </div>
-            </div>
-
-            <div x-data="{ openAdd: false }" class="flex justify-end">
-                <button @click="openAdd = true"
-                    class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl shadow-lg font-bold transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Tambah User
-                </button>
-
-                <!-- MODAL -->
-                <div x-show="openAdd" x-transition.opacity
-                    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-                    style="display: none">
-
-                    <div @click.away="openAdd = false"
-                        class="bg-white dark:bg-gray-800 w-full max-w-md rounded-3xl shadow-2xl border border-emerald-100 dark:border-emerald-900/30">
-
-                        <!-- HEADER -->
-                        <div class="px-6 py-4 border-b border-emerald-100 dark:border-emerald-900/30 flex justify-between items-center">
-                            <h3 class="font-bold text-lg text-emerald-700 dark:text-emerald-400">
-                                Tambah User Baru
-                            </h3>
-                            <button @click="openAdd = false" class="text-gray-400 hover:text-red-500">✕</button>
-                        </div>
-
-                        <!-- FORM -->
-                        <form method="POST" action="{{ route('admin.users.store') }}" class="p-6 space-y-5">
-                            @csrf
-
-                            <!-- NAMA -->
-                            <div>
-                                <label class="block text-sm font-bold text-emerald-700 mb-1">Nama Lengkap</label>
-                                <input type="text" name="name" required
-                                    class="w-full rounded-xl border-emerald-200 dark:bg-gray-900 focus:ring-emerald-500"
-                                    placeholder="Nama lengkap">
-                            </div>
-
-                            <!-- USERNAME -->
-                            <div>
-                                <label class="block text-sm font-bold text-emerald-700 mb-1">Username</label>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-3 flex items-center text-emerald-400 font-bold ml-3">@</span>
-                                    <input type="text" name="username" required
-                                        class="pl-9 w-full rounded-xl border-emerald-200 dark:bg-gray-900 focus:ring-emerald-500"
-                                        placeholder="username">
-                                </div>
-                            </div>
-
-                            <!-- PASSWORD -->
-                            <div>
-                                <label class="block text-sm font-bold text-emerald-700 mb-1">Password</label>
-                                <input type="password" name="password" required
-                                    class="w-full rounded-xl border-emerald-200 dark:bg-gray-900 focus:ring-emerald-500"
-                                    placeholder="Masukan password">
-                            </div>
-
-                            <!-- KONFIRMASI -->
-                            <div>
-                                <label class="block text-sm font-bold text-emerald-700 mb-1">Konfirmasi Password</label>
-                                <input type="password" name="password_confirmation" required
-                                    class="w-full rounded-xl border-emerald-200 dark:bg-gray-900 focus:ring-emerald-500"
-                                    placeholder="Ulangi password">
-                            </div>
-
-                            <!-- ACTION -->
-                            <div class="pt-4 flex justify-end gap-3">
-                                <button type="button" @click="openAdd = false"
-                                    class="px-4 py-2 text-gray-500 font-bold hover:text-gray-700">
-                                    Batal
-                                </button>
-                                <button type="submit"
-                                    class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg transition">
-                                    Simpan User
-                                </button>
-                            </div>
-                        </form>
+            {{-- HEADER --}}
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-users text-emerald-600"></i> Daftar Pengguna
+                </h2>
+                
+                <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                    <div class="relative w-full md:w-64">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-search text-gray-400"></i>
+                        </span>
+                        <input type="text" x-model="search" @input.debounce.500ms="fetchResults()"
+                            class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm transition"
+                            placeholder="Cari nama atau username...">
                     </div>
+
+                    <button @click="openModal()" 
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i> Tambah User
+                    </button>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl shadow-emerald-900/5 sm:rounded-2xl border border-emerald-100 dark:border-emerald-900/20">
+            {{-- TABEL USERS --}}
+            <div id="users-container" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-emerald-100 dark:divide-emerald-900/50">
-                        <thead class="bg-emerald-50/50 dark:bg-emerald-900/20">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-500 uppercase text-xs font-bold">
                             <tr>
-                                <th class="px-6 py-4 text-left text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Pengguna</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Username</th>
-                                <th class="px-6 py-4 text-center text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Role</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Bergabung</th>
-                                <th class="px-6 py-4 text-right text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Aksi</th>
+                                {{-- 1. SORTABLE HEADER: NAMA --}}
+                                <th @click="sortBy('name')" class="px-6 py-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition group select-none">
+                                    <div class="flex items-center gap-1">
+                                        Nama
+                                        <i class="fa-solid" :class="getSortIcon('name')"></i>
+                                    </div>
+                                </th>
+
+                                {{-- 2. SORTABLE HEADER: USERNAME --}}
+                                <th @click="sortBy('username')" class="px-6 py-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition group select-none">
+                                    <div class="flex items-center gap-1">
+                                        Username
+                                        <i class="fa-solid" :class="getSortIcon('username')"></i>
+                                    </div>
+                                </th>
+
+                                {{-- 3. SORTABLE HEADER: ROLE --}}
+                                <th @click="sortBy('role')" class="px-6 py-4 text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition group select-none">
+                                    <div class="flex items-center justify-center gap-1">
+                                        Role
+                                        <i class="fa-solid" :class="getSortIcon('role')"></i>
+                                    </div>
+                                </th>
+
+                                {{-- 4. SORTABLE HEADER: BERGABUNG --}}
+                                <th @click="sortBy('created_at')" class="px-6 py-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition group select-none">
+                                    <div class="flex items-center gap-1">
+                                        Bergabung
+                                        <i class="fa-solid" :class="getSortIcon('created_at')"></i>
+                                    </div>
+                                </th>
+
+                                <th class="px-6 py-4 text-right">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-emerald-50 dark:divide-emerald-900/30">
-                            <template x-for="user in filteredUsers" :key="user.id">
-                                <tr class="hover:bg-emerald-50/30 dark:hover:bg-emerald-900/10 transition duration-150">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-10 w-10 flex-shrink-0 rounded-full overflow-hidden shadow-md border border-emerald-200 bg-emerald-100">
-                                                <template x-if="user.profile">
-                                                    <img :src="user.profile" alt="Profile"
-                                                        class="w-full h-full object-cover">
-                                                </template>
-                                                <template x-if="!user.profile">
-                                                    <div class="w-full h-full flex items-center justify-center 
-                                                                bg-gradient-to-br from-emerald-400 to-emerald-600 
-                                                                text-white font-bold">
-                                                        <span x-text="user.name.charAt(0)"></span>
-                                                    </div>
-                                                </template>
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-semibold text-gray-900 dark:text-white" x-text="user.name"></div>
-                                                <div class="text-[10px] text-emerald-500 font-mono">ID: #<span x-text="user.id"></span></div>
-                                            </div>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                            @forelse ($users as $user)
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                                    <td class="px-6 py-4 font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 flex items-center justify-center font-bold text-xs">
+                                            {{ substr($user->name, 0, 1) }}
+                                        </div>
+                                        <div>
+                                            <div>{{ $user->name }}</div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300" x-text="user.username"></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <span :class="user.role === 'admin' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-600 border-blue-100'" 
-                                              class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border" 
-                                              x-text="user.role"></span>
+                                    
+                                    <td class="px-6 py-4 text-gray-500 dark:text-gray-400 font-mono text-xs">
+                                        {{ $user->username ?? '-' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400" x-text="user.formatted_date"></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex justify-end items-center space-x-4">
-                                            <a :href="'/admin/users/' + user.id + '/edit'" class="text-emerald-600 hover:text-emerald-900 dark:text-emerald-400 dark:hover:text-emerald-300 transition group flex items-center">
-                                                <svg class="w-4 h-4 mr-1 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                                Edit
-                                            </a>
+
+                                    <td class="px-6 py-4 text-center">
+                                        @if($user->role === 'admin')
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300">
+                                                <i class="fa-solid fa-shield-halved text-[10px]"></i> Admin
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                                                User
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-xs">
+                                        {{ $user->created_at->format('d M Y') }}
+                                        <span class="block text-[10px] text-gray-400">{{ $user->created_at->format('H:i') }}</span>
+                                    </td>
+
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex justify-end gap-2">
+                                            <button @click="openModal({{ $user->id }}, '{{ addslashes($user->name) }}', '{{ $user->username }}', '{{ $user->role }}')" 
+                                                class="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition" title="Edit">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </button>
                                             
-                                            <template x-if="user.id != {{ Auth::id() }}">
-                                                <form :action="'/admin/users/' + user.id" method="POST" onsubmit="return confirm('Hapus user ini?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="text-red-500 hover:text-red-700 dark:hover:text-red-400 transition flex items-center">
-                                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                                        Hapus
-                                                    </button>
-                                                </form>
-                                            </template>
-                                            <template x-if="user.id == {{ Auth::id() }}">
-                                                <span class="text-[10px] bg-gray-100 text-gray-400 px-2 py-1 rounded">Anda</span>
-                                            </template>
+                                            @if(Auth::id() !== $user->id)
+                                                <button @click="deleteUser({{ $user->id }})" 
+                                                    class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition" title="Hapus">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
-                            </template>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="px-6 py-8 text-center text-gray-400">Tidak ada user ditemukan.</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
-
-                <div x-show="filteredUsers.length === 0" class="p-12 text-center">
-                    <svg class="mx-auto h-12 w-12 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <p class="mt-4 text-emerald-600 font-medium">Tidak ada user ditemukan...</p>
+                <div class="p-4 border-t border-gray-100 dark:border-gray-700">
+                    {{ $users->links() }}
                 </div>
             </div>
+
         </div>
+
+        {{-- MODAL FORM --}}
+        <div x-show="modalOpen" style="display: none;" 
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
+             x-transition.opacity>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all" 
+                 @click.away="closeModal()">
+                
+                <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white" x-text="isEdit ? 'Edit User' : 'Tambah User'"></h3>
+                    <button @click="closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+                </div>
+                
+                <form @submit.prevent="submitForm" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nama Lengkap</label>
+                        <input type="text" x-model="form.name" required 
+                            @input="form.name = $el.value.toLowerCase().replace(/\b\w/g, l => l.toUpperCase())"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:bg-gray-900 dark:border-gray-700 dark:text-white text-sm focus:ring-emerald-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Username</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">@</span>
+                            <input type="text" x-model="form.username" required placeholder="username" 
+                                @input="form.username = $el.value.toLowerCase().replace(/\s+/g, '')"
+                                class="w-full pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 dark:bg-gray-900 dark:border-gray-700 dark:text-white text-sm focus:ring-emerald-500 font-mono">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">
+                            Password <span x-show="isEdit" class="text-gray-400 font-normal normal-case">(Kosongkan jika tidak diubah)</span>
+                        </label>
+                        <input type="password" x-model="form.password" :required="!isEdit" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:bg-gray-900 dark:border-gray-700 dark:text-white text-sm focus:ring-emerald-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Role / Hak Akses</label>
+                        <select x-model="form.role" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:bg-gray-900 dark:border-gray-700 dark:text-white text-sm focus:ring-emerald-500">
+                            <option value="user">User Biasa</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+
+                    <div class="pt-2 flex justify-end gap-2">
+                        <button type="button" @click="closeModal()" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg">Batal</button>
+                        <button type="submit" class="px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-md transition">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        function userManagement() {
+        function userHandler() {
             return {
-                search: '',
-                sortBy: 'newest',
-                // Masukkan data dari Laravel ke JavaScript
-                users: [
-                    @foreach($users as $user)
-                    {
-                        id: {{ $user->id }},
-                        name: @json($user->name),
-                        username: @json($user->username),
-                        role: @json($user->role),
-                        profile: @json($user->profile ? asset('storage/'.$user->profile) : null),
-                        created_at: "{{ $user->created_at }}",
-                        formatted_date: "{{ $user->created_at->format('d M Y') }}"
-                    },
-                    @endforeach
-                ],
-                get filteredUsers() {
-                    let filtered = this.users.filter(user => {
-                        return user.name.toLowerCase().includes(this.search.toLowerCase()) ||
-                            user.username.toLowerCase().includes(this.search.toLowerCase());
-                    });
+                search: '{{ request('search') }}',
+                // STATE SORTING
+                sortCol: '{{ request('sort', 'created_at') }}',
+                sortDir: '{{ request('dir', 'desc') }}',
+                
+                modalOpen: false,
+                isEdit: false,
+                currentUserId: null,
+                
+                form: { name: '', username: '', password: '', role: 'user' },
 
-                    // Sorting Logic
-                    return filtered.sort((a, b) => {
-                        if (this.sortBy === 'name_asc') return a.name.localeCompare(b.name);
-                        if (this.sortBy === 'name_desc') return b.name.localeCompare(a.name);
-                        if (this.sortBy === 'newest') return new Date(b.created_at) - new Date(a.created_at);
-                        if (this.sortBy === 'oldest') return new Date(a.created_at) - new Date(b.created_at);
+                // --- FUNGSI SORTING ---
+                sortBy(column) {
+                    if (this.sortCol === column) {
+                        this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        this.sortCol = column;
+                        this.sortDir = 'asc';
+                    }
+                    this.fetchResults();
+                },
+
+                // Helper untuk Icon Panah Sort
+                getSortIcon(column) {
+                    if (this.sortCol !== column) return 'fa-sort text-gray-300 opacity-0 group-hover:opacity-50';
+                    return this.sortDir === 'asc' ? 'fa-sort-up text-emerald-500' : 'fa-sort-down text-emerald-500';
+                },
+
+                // --- FETCH DATA ---
+                fetchResults() {
+                    const url = new URL('{{ route('admin.users.index') }}');
+                    if (this.search) url.searchParams.set('search', this.search);
+                    
+                    // Masukkan param sorting ke URL
+                    url.searchParams.set('sort', this.sortCol);
+                    url.searchParams.set('dir', this.sortDir);
+                    
+                    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                        .then(res => res.text())
+                        .then(html => {
+                            const doc = new DOMParser().parseFromString(html, 'text/html');
+                            document.getElementById('users-container').innerHTML = doc.getElementById('users-container').innerHTML;
+                            window.history.pushState({}, '', url);
+                        });
+                },
+
+                // --- MODAL FUNCTIONS ---
+                openModal(id = null, name = '', username = '', role = 'user') {
+                    if (id) {
+                        this.isEdit = true;
+                        this.currentUserId = id;
+                        this.form = { name, username: username || '', role, password: '' };
+                    } else {
+                        this.isEdit = false;
+                        this.currentUserId = null;
+                        this.form = { name: '', username: '', role: 'user', password: '' };
+                    }
+                    this.modalOpen = true;
+                },
+
+                closeModal() {
+                    this.modalOpen = false;
+                },
+
+                submitForm() {
+                    const url = this.isEdit ? `/admin/users/${this.currentUserId}` : `{{ route('admin.users.store') }}`;
+                    const method = this.isEdit ? 'PUT' : 'POST';
+
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ _method: method, ...this.form })
+                    })
+                    .then(async res => {
+                        const data = await res.json();
+                        if (res.ok) {
+                            this.closeModal();
+                            this.fetchResults();
+                            alert('Berhasil menyimpan data!');
+                        } else {
+                            alert(data.message || 'Terjadi kesalahan input.');
+                        }
+                    })
+                    .catch(err => alert('Terjadi kesalahan sistem.'));
+                },
+
+                deleteUser(id) {
+                    if (!confirm('Yakin ingin menghapus user ini?')) return;
+                    fetch(`/admin/users/${id}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: JSON.stringify({ _method: 'DELETE' })
+                    }).then(res => {
+                        if (res.ok) { this.fetchResults(); alert('User dihapus.'); } 
+                        else { alert('Gagal menghapus user.'); }
                     });
                 }
             }

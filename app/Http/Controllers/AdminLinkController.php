@@ -4,63 +4,76 @@ namespace App\Http\Controllers;
 
 use App\Models\Link;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminLinkController extends Controller
 {
     public function index(Request $request)
     {
-        $baseQuery = Link::query()
-            ->when($request->search, function ($q) use ($request) {
-                $search = $request->search;
+        if (Auth::user()->role !== 'admin') abort(403);
 
-                $q->where(function ($qq) use ($search) {
+        // 1. Query Dasar (Eager Load)
+        $query = Link::with(['user', 'page']);
 
-                    // 🔗 field di tabel links
-                    $qq->where('title', 'like', "%{$search}%")
-                        ->orWhere('original_url', 'like', "%{$search}%")
-                        ->orWhere('short_code', 'like', "%{$search}%");
-
-                    $qq->orWhereHas('page', function ($page) use ($search) {
-                        $page->where('title', 'like', "%{$search}%");
-                    });
-
-                    $qq->orWhereHas('page.user', function ($user) use ($search) {
-                        $user->where('name', 'like', "%{$search}%")
+        // 2. Filter Pencarian (Global)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('short_code', 'like', "%{$search}%")
+                    ->orWhere('destination_url', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($u) use ($search) {
+                        $u->where('name', 'like', "%{$search}%")
                             ->orWhere('username', 'like', "%{$search}%");
                     });
+            });
+        }
 
-                    $qq->orWhereHas('user', function ($user) use ($search) {
-                        $user->where('name', 'like', "%{$search}%")
-                            ->orWhere('username', 'like', "%{$search}%");
-                    });
-                });
-            })
-            ->latest();
+        // 3. Logika Sorting
+        $sortCol = $request->get('sort', 'created_at');
+        $sortDir = $request->get('dir', 'desc');
+        $allowed = ['title', 'short_code', 'click_count', 'created_at'];
 
-        // 🌿 BIO LINKS → user dari page
-        $bioLinks = (clone $baseQuery)
-            ->whereNotNull('page_id')
-            ->with(['page.user'])
-            ->paginate(15, ['*'], 'bio_page');
+        if (in_array($sortCol, $allowed)) {
+            $query->orderBy($sortCol, $sortDir);
+        } else {
+            $query->latest();
+        }
 
-        // ⚡ SHORTLINK → user langsung
-        $shortLinks = (clone $baseQuery)
-            ->whereNull('page_id')
-            ->with('user')
-            ->paginate(15, ['*'], 'short_page');
+        // 4. Pisahkan Query untuk Dua Tab
+        // Penting: Gunakan clone agar filter/sort di atas terbawa ke kedua variabel
+
+        // A. Bio Links (Punya page_id)
+        $bioLinks = (clone $query)->whereNotNull('page_id')
+            ->paginate(15, ['*'], 'bio_page') // Nama page beda biar gak bentrok
+            ->withQueryString();
+
+        // B. Shortlinks (Tdk punya page_id)
+        $shortLinks = (clone $query)->whereNull('page_id')
+            ->paginate(15, ['*'], 'short_page')
+            ->withQueryString();
 
         return view('admin.links.index', compact('bioLinks', 'shortLinks'));
     }
 
-    public function toggle(Link $link)
+    public function toggleStatus(Link $link)
     {
-        $link->update(['is_active' => ! $link->is_active]);
-        return back()->with('success', 'Status link diperbarui.');
+        if (Auth::user()->role !== 'admin') abort(403);
+
+        $link->update(['is_active' => !$link->is_active]);
+
+        return response()->json([
+            'status' => 'success',
+            'is_active' => $link->is_active
+        ]);
     }
 
     public function destroy(Link $link)
     {
+        if (Auth::user()->role !== 'admin') abort(403);
+
         $link->delete();
+
         return back()->with('success', 'Link berhasil dihapus.');
     }
 }

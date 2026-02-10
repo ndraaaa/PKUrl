@@ -11,12 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // 1. Tabel Users (Gabungan)
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+
+            // Identitas Dasar
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('username')->unique();
+            $table->string('email')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
+            // Atribut Tambahan
+            $table->string('role')->default('user');
+            $table->string('profile')->nullable();
+
             $table->rememberToken();
             $table->timestamps();
         });
@@ -42,8 +51,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };

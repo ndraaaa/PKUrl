@@ -6,97 +6,97 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
 class AdminUserController extends Controller
 {
-    // Menampilkan daftar user
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::latest()->get();
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $query = User::query();
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                    ->orWhere('username', 'like', "%{$request->search}%");
+            });
+        }
+
+        $sortColumn = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('dir', 'desc');
+
+        $allowedColumns = ['name', 'username', 'role', 'created_at'];
+
+        if (in_array($sortColumn, $allowedColumns)) {
+            $query->orderBy($sortColumn, $sortDirection);
+        } else {
+            $query->latest(); // Fallback default
+        }
+
+        $users = $query->paginate(50)->withQueryString(); 
+
         return view('admin.users.index', compact('users'));
     }
 
-    // 1. EDIT: Tampilkan Form
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'username' => 'required|string|max:50|alpha_dash|unique:users,username',
-            'password' => 'required|min:3|confirmed',
+            'name'     => 'required|string|max:255',
+            'username' => 'required|string|alpha_dash|max:25|unique:user',
+            'password' => 'required|string|min:3',
+            'role'     => 'required|in:admin,user',
         ]);
 
         User::create([
-            'name' => $request->name,
-            'username' => $request->username,
-            'email' => $request->username . '@local.app', // 🔥 FIX UTAMA
+            'name'     => Str::title($request->name),
+            'username' => Str::lower($request->username),
             'password' => Hash::make($request->password),
-            'role' => 'user',
+            'role'     => $request->role,
         ]);
 
-        return redirect()
-            ->route('admin.users')
-            ->with('success', 'User baru berhasil ditambahkan.');
+        if ($request->wantsJson()) return response()->json(['status' => 'success']);
+        return back()->with('success', 'User berhasil ditambahkan.');
     }
 
-    public function edit($id)
+    public function update(Request $request, User $user)
     {
-        $user = User::findOrFail($id);
-        return view('admin.users.edit', compact('user'));
-    }
-
-    // 2. UPDATE: Simpan Perubahan
-    public function update(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
-
         $request->validate([
-            'name' => 'required|string|max:255',
-            'username' => 'required|string|max:50|alpha_dash|unique:users,username,' . $user->id,
-            'role' => 'required|in:user,admin',
-            'password' => 'nullable|min:3|confirmed',
-            'profile' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'name'     => 'required|string|max:255',
+            'username' => ['required', 'alpha_dash', Rule::unique('user')->ignore($user->id)],
+            'role'     => 'required|in:admin,user',
         ]);
 
-        $user->name = $request->name;
-        $user->username = $request->username;
-        $user->role = $request->role;
+        $data = [
+            // FORMATTING OTOMATIS DISINI JUGA
+            'name'     => Str::title($request->name),
+            'username' => Str::lower($request->username),
+            'role'     => $request->role,
+        ];
 
-        // 🔐 Password
         if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
+            $request->validate(['password' => 'min:3']);
+            $data['password'] = Hash::make($request->password);
         }
 
-        // 🖼️ Upload Foto Profil
-        if ($request->hasFile('profile')) {
+        $user->update($data);
 
-            // Hapus foto lama
-            if ($user->profile && Storage::disk('public')->exists($user->profile)) {
-                Storage::disk('public')->delete($user->profile);
-            }
-
-            $path = $request->file('profile')->store('profiles', 'public');
-            $user->profile = $path;
-        }
-
-        $user->save();
-
-        return redirect()
-            ->route('admin.users.edit', $user->id)
-            ->with('success', 'Profil user berhasil diperbarui.');
+        if ($request->wantsJson()) return response()->json(['status' => 'success']);
+        return back()->with('success', 'Data user diperbarui.');
     }
 
-    // 3. DESTROY: Hapus User
-    public function destroy($id)
+    public function destroy(User $user)
     {
-        // Proteksi: Jangan biarkan Admin menghapus akunnya sendiri yang sedang login
-        if ($id == Auth::id()) {
-            return redirect()->back()->with('error', 'Anda tidak bisa menghapus akun sendiri!');
+        // Cegah menghapus diri sendiri
+        if ($user->id === Auth::id()) {
+            return response()->json(['message' => 'Anda tidak bisa menghapus akun sendiri.'], 403);
         }
 
-        $user = User::findOrFail($id);
         $user->delete();
 
-        return redirect()->back()->with('success', 'User berhasil dihapus.');
+        return response()->json(['status' => 'success']);
     }
 }

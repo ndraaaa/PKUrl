@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+// use Illuminate\Support\Facades\Hash; // Jika memakai hash
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
@@ -30,36 +30,47 @@ class AuthenticatedSessionController extends Controller
 
         $user = User::where('username', $credentials['username'])->first();
 
-        if ($user) {
+        // Plain Text Password
+        if ($user && $user->password === $credentials['password']) {
 
-            // 1️⃣ Password sudah ter-hash
-            if (
-                $this->looksHashed($user->password)
-                && Hash::check($credentials['password'], $user->password)
-            ) {
+            Auth::login($user, $request->boolean('remember'));
 
-                Auth::login($user, $request->boolean('remember'));
-                $request->session()->regenerate();
+            $request->session()->regenerate();
 
-                return redirect()->intended(route('dashboard', absolute: false));
-            }
-
-            // 2️⃣ Password legacy (plaintext)
-            if (
-                !$this->looksHashed($user->password)
-                && $user->password === $credentials['password']
-            ) {
-
-                // Re-hash password
-                $user->password = Hash::make($credentials['password']);
-                $user->save();
-
-                Auth::login($user, $request->boolean('remember'));
-                $request->session()->regenerate();
-
-                return redirect()->intended(route('dashboard', absolute: false));
-            }
+            return redirect()->intended(route('dashboard', absolute: false));
         }
+
+        // Jika Ingin Memakai Hash Password
+        // if ($user) {
+
+        //     // 1️⃣ Password sudah ter-hash
+        //     if (
+        //         $this->looksHashed($user->password)
+        //         && Hash::check($credentials['password'], $user->password)
+        //     ) {
+
+        //         Auth::login($user, $request->boolean('remember'));
+        //         $request->session()->regenerate();
+
+        //         return redirect()->intended(route('dashboard', absolute: false));
+        //     }
+
+        //     // 2️⃣ Password legacy (plaintext)
+        //     if (
+        //         !$this->looksHashed($user->password)
+        //         && $user->password === $credentials['password']
+        //     ) {
+
+        //         // Re-hash password
+        //         $user->password = Hash::make($credentials['password']);
+        //         $user->save();
+
+        //         Auth::login($user, $request->boolean('remember'));
+        //         $request->session()->regenerate();
+
+        //         return redirect()->intended(route('dashboard', absolute: false));
+        //     }
+        // }
 
         return back()->withErrors([
             'username' => __('auth.failed'),
@@ -83,12 +94,13 @@ class AuthenticatedSessionController extends Controller
     /**
      * Heuristic check untuk hash bcrypt / argon
      */
-    private function looksHashed(?string $value): bool
-    {
-        if (!$value) {
-            return false;
-        }
+    // Jika Memakai Hash Password
+    // private function looksHashed(?string $value): bool
+    // {
+    //     if (!$value) {
+    //         return false;
+    //     }
 
-        return preg_match('/^\$(2y|2a|argon2id|argon2i)\$/', $value) === 1;
-    }
+    //     return preg_match('/^\$(2y|2a|argon2id|argon2i)\$/', $value) === 1;
+    // }
 }

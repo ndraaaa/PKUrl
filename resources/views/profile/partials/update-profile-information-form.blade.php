@@ -5,7 +5,7 @@
         </div>
         <div>
             <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Informasi Profil</h2>
-            <p class="text-sm text-gray-500">Perbarui nama dan alamat email akun Anda.</p>
+            <p class="text-sm text-gray-500">Perbarui nama lengkap akun Anda.</p>
         </div>
     </header>
 
@@ -18,12 +18,6 @@
                 <x-input-label for="name" :value="__('Nama Lengkap')" class="text-xs uppercase tracking-wider font-semibold text-gray-500" />
                 <x-text-input id="name" name="name" type="text" class="mt-1 block w-full border-gray-200 dark:border-gray-700 focus:ring-emerald-500" :value="old('name', $user->name)" required autofocus />
                 <x-input-error class="mt-2" :messages="$errors->get('name')" />
-            </div>
-
-            <div>
-                <x-input-label for="email" :value="__('Email Address')" class="text-xs uppercase tracking-wider font-semibold text-gray-500" />
-                <x-text-input id="email" name="email" type="email" class="mt-1 block w-full border-gray-200 dark:border-gray-700 focus:ring-emerald-500" :value="old('email', $user->email)" required />
-                <x-input-error class="mt-2" :messages="$errors->get('email')" />
             </div>
         </div>
 

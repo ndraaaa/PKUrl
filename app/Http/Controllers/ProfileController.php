@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
+use Illuminate\Validation\Rule;
+use App\Models\User;
 
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Tampilkan Form Edit Profil User
      */
-    public function edit(Request $request): View
+    public function edit(Request $request)
     {
         return view('profile.edit', [
             'user' => $request->user(),
@@ -22,25 +21,46 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
+     * Update Data User (Username, Nama, Foto)
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request)
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            // Validasi Username Unik (kecuali punya sendiri)
+            'username' => ['required', 'string', 'max:50', 'alpha_dash', Rule::unique('users')->ignore($user->id)],
+            'profile' => ['nullable', 'image', 'max:2048'], // Max 2MB
+        ]);
+
+        // Update Data Dasar
+        $user->name = $request->name;
+
+        // Logic Sinkronisasi Username & Email Palsu
+        if ($user->username !== $request->username) {
+            $user->username = $request->username;
+            $user->email = strtolower($request->username) . '@local.app'; // Update email otomatis
+            $user->email_verified_at = null; // Reset verifikasi jika pakai fitur ini
         }
 
-        $request->user()->save();
+        // Logic Upload Foto Profil (User Ganti Foto Sendiri)
+        if ($request->hasFile('profile')) {
+            // Kita tidak perlu hapus foto lama manual,
+            // karena sudah ada Event 'updating' di Model User yang menanganinya.
+            $path = $request->file('profile')->store('profiles', 'public');
+            $user->profile = $path;
+        }
+
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**
-     * Delete the user's account.
+     * Hapus Akun Sendiri
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request)
     {
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
@@ -50,6 +70,7 @@ class ProfileController extends Controller
 
         Auth::logout();
 
+        // Model User akan otomatis menghapus file foto & data link (Cascade)
         $user->delete();
 
         $request->session()->invalidate();

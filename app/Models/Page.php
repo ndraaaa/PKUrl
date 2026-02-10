@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Page extends Model
 {
+    protected $table = 'pages';
+
     use HasFactory;
 
     protected $fillable = [
@@ -14,20 +16,30 @@ class Page extends Model
         'handle',
         'title',
         'bio',
-        'avatar',
-        'theme',
-        'background_image',
+        'avatar_path',
+        'appearance',
+        'meta_title',
+        'meta_description',
+        'is_public',
     ];
 
-    // Page milik User
+    /**
+     * Casting otomatis:
+     * - 'appearance' di DB (JSON) -> jadi Array di PHP
+     * - 'is_public' di DB (0/1) -> jadi Boolean (true/false) di PHP
+     */
+    protected $casts = [
+        'appearance' => 'array',
+        'is_public' => 'boolean',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Page punya banyak Link
     public function links()
     {
-        return $this->hasMany(Link::class);
+        return $this->hasMany(Link::class)->orderBy('order', 'asc');
     }
 }

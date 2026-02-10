@@ -5,130 +5,140 @@ namespace App\Http\Controllers;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Str; // <--- TAMBAHKAN INI
 
 class PageController extends Controller
 {
-    // Menampilkan daftar halaman milik user
+    // 1. INDEX: Tampilkan daftar halaman (Dashboard)
     public function index()
     {
         $pages = Auth::user()->pages()->latest()->get();
         return view('pages.index', compact('pages'));
     }
 
-    // Menyimpan halaman baru
+    // 2. STORE: Buat Halaman Baru
     public function store(Request $request)
     {
         $request->validate([
-            'handle' => ['required', 'alpha_dash', 'unique:pages,handle', 'not_in:login,register,dashboard'],
-            'title' => 'required|max:50',
+            'handle' => [
+                'required',
+                'alpha_dash',
+                'unique:pages,handle',
+                'not_in:login,register,dashboard,admin'
+            ],
+            'title'  => 'required|max:50',
         ]);
 
         Auth::user()->pages()->create([
-            'handle' => $request->handle,
-            'title' => $request->title,
-            'theme' => 'default'
+            // UBAH DISINI: Pakai Str::lower() agar otomatis huruf kecil
+            'handle' => Str::lower($request->handle),
+            'title'  => $request->title,
+            'appearance' => [
+                'theme' => 'default',
+                'background_type' => 'color',
+                'background_value' => '#ffffff',
+                'text_color' => '#000000',
+                'button_shape' => 'rounded'
+            ]
         ]);
 
         return redirect()->back()->with('success', 'Halaman baru berhasil dibuat!');
     }
 
-    // Masuk ke Dashboard Editor untuk Page tertentu
+    // 3. EDIT: Masuk ke Editor
     public function edit(Page $page)
     {
-        if ($page->user_id !== Auth::id()) {
-            abort(403);
-        }
-
-        // AMBIL LINKS JUGA (Agar bisa dikelola di satu halaman)
-        $links = $page->links()
-            ->orderBy('order')
-            ->get();
-
+        if ($page->user_id !== Auth::id()) abort(403);
+        $links = $page->links()->orderBy('order', 'asc')->get();
         return view('pages.edit', compact('page', 'links'));
     }
 
+    // 4. UPDATE: Simpan Perubahan
     public function update(Request $request, Page $page)
     {
-        // Security: Pastikan page milik user
-        if ($page->user_id !== Auth::id()) {
-            abort(403);
-        }
+        if ($page->user_id !== Auth::id()) abort(403);
 
         $request->validate([
-            'handle' => ['required', 'alpha_dash', 'unique:pages,handle,' . $page->id],
+            'handle' => ['required', 'alpha_dash', Rule::unique('pages')->ignore($page->id)],
             'title'  => 'required|max:50',
-            'theme'  => 'required',
-            'avatar' => 'nullable|image|max:5120',
+            'bio'    => 'nullable|max:500',
+            'avatar' => 'nullable|image|max:2048',
             'background_image' => 'nullable|image|max:5120',
         ]);
 
-        $data = [
-            'handle' => $request->handle,
-            'title'  => $request->title,
-            'theme'  => $request->theme,
-        ];
+        // Hapus Avatar Lama jika diminta
+        if ($request->has('delete_avatar')) {
+            if ($page->avatar_path && Storage::disk('public')->exists($page->avatar_path)) {
+                Storage::disk('public')->delete($page->avatar_path);
+            }
+            $page->avatar_path = null;
+        }
 
-        // Handle File Upload Avatar
+        // Upload Avatar Baru
         if ($request->hasFile('avatar')) {
-            if ($page->avatar) {
-                Storage::disk('public')->delete($page->avatar);
+            if ($page->avatar_path && Storage::disk('public')->exists($page->avatar_path)) {
+                Storage::disk('public')->delete($page->avatar_path);
             }
-            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+            $page->avatar_path = $request->file('avatar')->store('avatars', 'public');
         }
 
-        // Handle File Upload Background Image
+        // UBAH DISINI: Pakai Str::lower() juga saat update
+        $page->handle = Str::lower($request->handle);
+        $page->title  = $request->title;
+        $page->bio    = $request->bio;
+
+        // --- LOGIKA APPEARANCE ---
+        $currentAppearance = $page->appearance ?? [];
+
+        if ($request->has('theme')) {
+            $currentAppearance['theme'] = $request->theme;
+        }
+
         if ($request->hasFile('background_image')) {
-            if ($page->background_image) {
-                Storage::disk('public')->delete($page->background_image);
+            if (isset($currentAppearance['background_image_path']) && Storage::disk('public')->exists($currentAppearance['background_image_path'])) {
+                Storage::disk('public')->delete($currentAppearance['background_image_path']);
             }
-            $data['background_image'] = $request->file('background_image')->store('backgrounds', 'public');
+
+            $bgPath = $request->file('background_image')->store('backgrounds', 'public');
+            $currentAppearance['background_type'] = 'image';
+            $currentAppearance['background_image_path'] = $bgPath;
         }
 
-        // Handle Hapus Background
-        if ($request->has('remove_background')) {
-            if ($page->background_image) {
-                Storage::disk('public')->delete($page->background_image);
+        if ($request->has('delete_background')) {
+            if (isset($currentAppearance['background_image_path']) && Storage::disk('public')->exists($currentAppearance['background_image_path'])) {
+                Storage::disk('public')->delete($currentAppearance['background_image_path']);
             }
-            $data['background_image'] = null;
+
+            $currentAppearance['background_type'] = 'color';
+            $currentAppearance['background_image_path'] = null;
         }
 
-        $page->update($data);
+        $page->appearance = $currentAppearance;
+        $page->save();
 
-        // --- UPDATE PENTING UNTUK AJAX ---
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Perubahan berhasil disimpan!',
-                'new_avatar' => isset($data['avatar']) ? asset('storage/' . $data['avatar']) : null
-            ]);
-        }
-
-        return redirect()->back()->with('success', 'Perubahan berhasil disimpan!');
+        return back()->with('success', 'Tampilan diperbarui!')->with('tab', 'appearance');
     }
 
+    // 5. DELETE PAGE
     public function destroy(Page $page)
     {
-        // Security Check (Opsional tapi disarankan)
-        if ($page->user_id !== Auth::id()) {
-            abort(403);
+        if ($page->user_id !== Auth::id()) abort(403);
+
+        if ($page->avatar_path && Storage::disk('public')->exists($page->avatar_path)) {
+            Storage::disk('public')->delete($page->avatar_path);
         }
 
-        if ($page->avatar) {
-            Storage::disk('public')->delete($page->avatar);
-        }
-
-        if ($page->background_image) {
-            Storage::disk('public')->delete($page->background_image);
+        if (isset($page->appearance['background_image_path'])) {
+            $path = $page->appearance['background_image_path'];
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
         }
 
         $page->delete();
 
-        if (request()->ajax()) {
-            return response()->json(['success' => true]);
-        }
-
-        return redirect()->route('dashboard')->with('success', 'Halaman berhasil dihapus');
+        return redirect()->route('pages.index')->with('success', 'Halaman dihapus.');
     }
 }
