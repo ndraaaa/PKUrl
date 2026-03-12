@@ -29,9 +29,8 @@ class ProfileController extends Controller
 
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            // Validasi Username Unik (kecuali punya sendiri)
             'username' => ['required', 'string', 'max:50', 'alpha_dash', Rule::unique('users')->ignore($user->id)],
-            'profile' => ['nullable', 'image', 'max:2048'], // Max 2MB
+            'profile' => ['nullable', 'image', 'max:5120'],
         ]);
 
         // Update Data Dasar
@@ -46,8 +45,6 @@ class ProfileController extends Controller
 
         // Logic Upload Foto Profil (User Ganti Foto Sendiri)
         if ($request->hasFile('profile')) {
-            // Kita tidak perlu hapus foto lama manual,
-            // karena sudah ada Event 'updating' di Model User yang menanganinya.
             $path = $request->file('profile')->store('profiles', 'public');
             $user->profile = $path;
         }
@@ -55,6 +52,23 @@ class ProfileController extends Controller
         $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'profile' => ['required', 'image', 'max:5120'],
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('profile')) {
+            $path = $request->file('profile')->store('profiles', 'public');
+            $user->profile = $path;
+            $user->save();
+        }
+
+        return back()->with('status', 'avatar-updated');
     }
 
     /**

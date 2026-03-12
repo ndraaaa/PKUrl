@@ -8,6 +8,7 @@ use App\Http\Controllers\ShortLinkController;
 use App\Http\Controllers\RedirectController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdminLinkController;
 use App\Http\Controllers\DashboardController;
 
 Route::view('/', 'welcome')->name('home');
@@ -34,14 +35,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/links/reorder', [PageLinkController::class, 'reorder'])->name('links.reorder');
 
     // --- C. SHORTLINK (LINK PENDEK BIASA) ---
+    Route::delete('/shortlinks/bulk-destroy', [ShortLinkController::class, 'bulkDestroy'])->name('shortlinks.bulk_destroy');
     Route::resource('shortlinks', ShortLinkController::class)->except(['create', 'show', 'edit']);
     Route::get('/shortlinks/{link}/qr-code', [ShortLinkController::class, 'generateQrWithLogo'])->name('shortlinks.qr');
-    Route::post('/shortlinks/bulk-destroy', [ShortLinkController::class, 'bulkDestroy'])->name('shortlinks.bulk_destroy');
 
     // --- D. PROFILE USER (Setting Akun) ---
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
 
     // --- E. ADMIN AREA ---
     Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -49,9 +51,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
         Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
-        Route::get('/links', [App\Http\Controllers\AdminLinkController::class, 'index'])->name('links.index');
-        Route::post('/links/{link}/toggle', [App\Http\Controllers\AdminLinkController::class, 'toggleStatus'])->name('links.toggle');
-        Route::delete('/links/{link}', [App\Http\Controllers\AdminLinkController::class, 'destroy'])->name('links.destroy');
+        Route::get('/links', [AdminLinkController::class, 'index'])->name('links.index');
+        Route::delete('/links/bulk-delete', [AdminLinkController::class, 'bulkDestroy'])->name('links.bulk_destroy');
+        Route::post('/links/{link}/toggle', [AdminLinkController::class, 'toggleStatus'])->name('links.toggle');
+        Route::delete('/links/{link}', [AdminLinkController::class, 'destroy'])->name('links.destroy');
     });
 });
 

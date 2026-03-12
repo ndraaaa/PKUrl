@@ -68,12 +68,40 @@ class AdminLinkController extends Controller
         ]);
     }
 
-    public function destroy(Link $link)
+    public function destroy(Request $request, Link $link)
     {
         if (Auth::user()->role !== 'admin') abort(403);
 
         $link->delete();
 
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Link berhasil dihapus.'
+            ]);
+        }
+
         return back()->with('success', 'Link berhasil dihapus.');
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        if (Auth::user()->role !== 'admin') abort(403);
+
+        $request->validate([
+            'ids'   => 'required|array',
+            'ids.*' => 'exists:links,id'
+        ]);
+
+        Link::whereIn('id', $request->ids)->delete();
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => count($request->ids) . ' Link berhasil dihapus secara massal.'
+            ]);
+        }
+
+        return back()->with('success', count($request->ids) . ' Link berhasil dihapus secara massal.');
     }
 }

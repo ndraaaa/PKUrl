@@ -148,7 +148,7 @@ class ShortLinkController extends Controller
             ->where('user_id', \Illuminate\Support\Facades\Auth::id())
             ->delete();
 
-        return response()->json(['status' => 'success']);
+        return back()->with('success', count($request->ids) . ' Link terpilih berhasil dihapus.');
     }
 
     // Guest Shortlink

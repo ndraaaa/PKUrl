@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+// use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
@@ -34,10 +34,10 @@ class AdminUserController extends Controller
         if (in_array($sortColumn, $allowedColumns)) {
             $query->orderBy($sortColumn, $sortDirection);
         } else {
-            $query->latest(); // Fallback default
+            $query->latest();
         }
 
-        $users = $query->paginate(50)->withQueryString(); 
+        $users = $query->paginate(100)->withQueryString();
 
         return view('admin.users.index', compact('users'));
     }
@@ -54,7 +54,8 @@ class AdminUserController extends Controller
         User::create([
             'name'     => Str::title($request->name),
             'username' => Str::lower($request->username),
-            'password' => Hash::make($request->password),
+            'password' => $request->password,
+            // 'password' => Hash::make($request->password),
             'role'     => $request->role,
         ]);
 
@@ -71,16 +72,15 @@ class AdminUserController extends Controller
         ]);
 
         $data = [
-            // FORMATTING OTOMATIS DISINI JUGA
             'name'     => Str::title($request->name),
             'username' => Str::lower($request->username),
             'role'     => $request->role,
         ];
 
-        if ($request->filled('password')) {
-            $request->validate(['password' => 'min:3']);
-            $data['password'] = Hash::make($request->password);
-        }
+        // if ($request->filled('password')) {
+        //     $request->validate(['password' => 'min:3']);
+        //     $data['password'] = Hash::make($request->password);
+        // }
 
         $user->update($data);
 
