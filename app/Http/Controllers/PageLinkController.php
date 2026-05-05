@@ -67,11 +67,6 @@ class PageLinkController extends Controller
         $settings['icon'] = $request->icon;
         $settings['display_as'] = $request->display_as ?? 'button';
 
-        // --- PERBAIKAN DI SINI ---
-        $isActive = filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN);
-
-        // $isActive = $request->boolean('is_active'); 
-
         $link->update([
             'title'           => $request->title,
             'destination_url' => $request->destination_url,
@@ -90,8 +85,6 @@ class PageLinkController extends Controller
         return back()->with('success', 'Link berhasil diperbarui.');
     }
 
-    // FITUR REORDER (DRAG & DROP)
-    // Dipanggil via AJAX / Fetch API saat user geser tombol
     public function reorder(Request $request)
     {
         $request->validate(['ids' => 'required|array']);

@@ -6,7 +6,7 @@ use App\Models\Link;
 use App\Models\Page;
 use App\Models\Analytics;
 use Illuminate\Http\Request;
-use Jenssegers\Agent\Agent; // Optional: Install library jenssegers/agent untuk deteksi device
+use Jenssegers\Agent\Agent;
 
 class RedirectController extends Controller
 {
@@ -15,8 +15,9 @@ class RedirectController extends Controller
         $link = Link::where('short_code', $path)->first();
         if ($link && $link->isValid()) {
             $this->recordVisit($link);
-            return redirect()->away($link->destination_url);
+            return view('pages.splash', compact('link'));
         }
+
         $page = Page::where('handle', $path)->first();
 
         if ($page && $page->is_public) {
@@ -26,21 +27,26 @@ class RedirectController extends Controller
 
             return view('pages.public-bio', compact('page'));
         }
-        abort(404);
+
+        abort(404, 'Halaman/Link tidak ditemukan atau sedang dinonaktifkan.');
     }
 
     private function recordVisit($link)
     {
-        $link->increment('click_count');
         $agent = new Agent();
+        if ($agent->isRobot()) {
+            return;
+        }
+
+        $link->increment('click_count');
 
         Analytics::create([
             'link_id'      => $link->id,
             'ip_address'   => request()->ip(),
             'country_code' => 'ID',
-            'device'       => $agent->device(), 
-            'browser'      => $agent->browser(),
-            'os'           => $agent->platform(),
+            'device'       => $agent->device() ?: 'Unknown',
+            'browser'      => $agent->browser() ?: 'Unknown',
+            'os'           => $agent->platform() ?: 'Unknown',
             'referer'      => request()->header('referer'),
         ]);
     }

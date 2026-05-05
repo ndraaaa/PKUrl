@@ -35,6 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/links/reorder', [PageLinkController::class, 'reorder'])->name('links.reorder');
 
     // --- C. SHORTLINK (LINK PENDEK BIASA) ---
+    Route::get('/api/search-shortlinks', [ShortLinkController::class, 'search'])->name('shortlinks.search');
     Route::delete('/shortlinks/bulk-destroy', [ShortLinkController::class, 'bulkDestroy'])->name('shortlinks.bulk_destroy');
     Route::resource('shortlinks', ShortLinkController::class)->except(['create', 'show', 'edit']);
     Route::get('/shortlinks/{link}/qr-code', [ShortLinkController::class, 'generateQrWithLogo'])->name('shortlinks.qr');
