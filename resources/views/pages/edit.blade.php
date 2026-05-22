@@ -155,7 +155,8 @@
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2" d="M4 8h16M4 16h16"></path>
-                                                </svg></div>
+                                                </svg>
+                                            </div>
                                             <div class="flex-1 min-w-0">
                                                 <div class="flex items-center gap-2">
                                                     <h4 class="font-bold text-gray-900 dark:text-white text-sm truncate"
@@ -237,9 +238,9 @@
                                                 @url-selected="query = $event.detail">
                                                 <input type="text" name="destination_url" x-model="query"
                                                     @input.debounce.500ms="fetchShortlinks" @click.away="show = false"
-                                                    required placeholder="URL (https://...) atau cari shortlink..."
+                                                    required :placeholder="getSocialPlaceholder(newSocialIcon)"
                                                     autocomplete="off"
-                                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-emerald-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white text-sm">
+                                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white text-sm">
 
                                                 <div x-show="show" x-transition
                                                     class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-48 overflow-y-auto">
@@ -286,7 +287,8 @@
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2" d="M4 8h16M4 16h16"></path>
-                                                </svg></div>
+                                                </svg>
+                                            </div>
 
                                             <div
                                                 class="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
@@ -477,34 +479,49 @@
                                 @endif
                             </div>
 
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-                                <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide mb-6 border-b border-gray-100 dark:border-gray-700 pb-2">Tema & Warna</h3>
-                                
+                            <div
+                                class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                <h3
+                                    class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide mb-6 border-b border-gray-100 dark:border-gray-700 pb-2">
+                                    Tema & Warna</h3>
+
                                 <div class="flex flex-row gap-3 overflow-x-auto pb-2 snap-x">
-    
+
                                     @foreach (['default', 'ocean', 'sunset', 'midnight'] as $key)
-                                    <label class="cursor-pointer group flex-1 min-w-[64px] snap-center">
-                                        <input type="radio" name="theme" value="{{ $key }}" x-model="selectedTheme" class="peer sr-only">
-                                        <div class="h-12 w-full rounded-lg bg-gray-200 peer-checked:ring-2 peer-checked:ring-emerald-500 transition relative overflow-hidden shadow-sm">
-                                            <div class="absolute inset-0 {{ $key == 'default' ? 'bg-emerald-900' : ($key == 'ocean' ? 'bg-blue-900' : ($key == 'sunset' ? 'bg-orange-900' : 'bg-black')) }}"></div>
-                                        </div>
-                                        <span class="text-[10px] uppercase font-bold mt-1.5 block text-center text-gray-500 peer-checked:text-emerald-600">{{ $key }}</span>
-                                    </label>
+                                        <label class="cursor-pointer group flex-1 min-w-[64px] snap-center">
+                                            <input type="radio" name="theme" value="{{ $key }}"
+                                                x-model="selectedTheme" class="peer sr-only">
+                                            <div
+                                                class="h-12 w-full rounded-lg bg-gray-200 peer-checked:ring-2 peer-checked:ring-emerald-500 transition relative overflow-hidden shadow-sm">
+                                                <div
+                                                    class="absolute inset-0 {{ $key == 'default' ? 'bg-emerald-900' : ($key == 'ocean' ? 'bg-blue-900' : ($key == 'sunset' ? 'bg-orange-900' : 'bg-black')) }}">
+                                                </div>
+                                            </div>
+                                            <span
+                                                class="text-[10px] uppercase font-bold mt-1.5 block text-center text-gray-500 peer-checked:text-emerald-600">{{ $key }}</span>
+                                        </label>
                                     @endforeach
 
                                     {{-- Opsi Ke-5: Warna Kustom (Color Picker) --}}
                                     <label class="cursor-pointer group flex-1 min-w-[64px] snap-center">
-                                        <input type="radio" name="theme" value="custom" x-model="selectedTheme" class="peer sr-only">
-                                        
-                                        <div class="h-12 w-full rounded-lg bg-gray-200 peer-checked:ring-2 peer-checked:ring-emerald-500 transition relative overflow-hidden flex items-center justify-center shadow-sm">
-                                            <input type="color" name="background_value" x-model="customColor" @click="selectedTheme = 'custom'" 
+                                        <input type="radio" name="theme" value="custom" x-model="selectedTheme"
+                                            class="peer sr-only">
+
+                                        <div
+                                            class="h-12 w-full rounded-lg bg-gray-200 peer-checked:ring-2 peer-checked:ring-emerald-500 transition relative overflow-hidden flex items-center justify-center shadow-sm">
+                                            <input type="color" name="background_value" x-model="customColor"
+                                                @click="selectedTheme = 'custom'"
                                                 class="absolute inset-[-10px] w-[calc(100%+20px)] h-[calc(100%+20px)] cursor-pointer outline-none border-0 p-0 m-0 z-10 opacity-0">
-                                            
-                                            <div class="absolute inset-0 z-0" :style="'background-color: ' + customColor"></div>
-                                            
-                                            <i class="fas fa-palette text-white drop-shadow-md z-0 mix-blend-difference relative"></i>
+
+                                            <div class="absolute inset-0 z-0"
+                                                :style="'background-color: ' + customColor"></div>
+
+                                            <i
+                                                class="fas fa-palette text-white drop-shadow-md z-0 mix-blend-difference relative"></i>
                                         </div>
-                                        <span class="text-[10px] uppercase font-bold mt-1.5 block text-center text-gray-500 peer-checked:text-emerald-600" x-text="selectedTheme === 'custom' ? customColor : 'Warna'"></span>
+                                        <span
+                                            class="text-[10px] uppercase font-bold mt-1.5 block text-center text-gray-500 peer-checked:text-emerald-600"
+                                            x-text="selectedTheme === 'custom' ? customColor : 'Warna'"></span>
                                     </label>
 
                                 </div>
@@ -578,13 +595,15 @@
                     <input type="hidden" name="title" x-model="editTitle" x-if="editDisplayAs == 'social'">
 
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">URL Tujuan</label>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1"
+                            x-text="editDisplayAs === 'social' ? 'Username / Kontak / URL' : 'URL Tujuan'"></label>
 
                         <div class="relative w-full" x-data="urlAutocomplete('')" x-init="$watch('editUrl', value => query = value)"
                             @url-selected="editUrl = $event.detail">
                             <input type="text" name="destination_url" x-model="query"
                                 @input.debounce.500ms="fetchShortlinks" @click.away="show = false"
                                 @input="editUrl = query" required autocomplete="off"
+                                :placeholder="editDisplayAs === 'social' ? getSocialPlaceholder(editIcon) : 'https://...'"
                                 class="w-full px-4 py-2 rounded-xl border border-gray-200 dark:bg-gray-900 dark:border-gray-700 dark:text-white text-sm"
                                 :class="{ 'border-red-500': errors.destination_url }">
 
@@ -702,8 +721,8 @@
 
         function editorPage(pageId) {
             return {
-                selectedTheme: '{{ old("theme", $page->appearance["theme"] ?? "default") }}',
-                customColor: '{{ old("background_value", $page->appearance["background_value"] ?? "#10b981") }}',
+                selectedTheme: '{{ old('theme', $page->appearance['theme'] ?? 'default') }}',
+                customColor: '{{ old('background_value', $page->appearance['background_value'] ?? '#10b981') }}',
                 activeTab: '{{ session('tab') === 'appearance' || $errors->hasAny(['handle', 'title', 'bio', 'avatar', 'background_image', 'theme']) ? 'appearance' : 'links' }}',
                 newSocialIcon: '',
                 isPublic: {{ $page->is_public ?? 1 ? 'true' : 'false' }},
@@ -760,25 +779,115 @@
                     return map[iconClass] || 'Social Media';
                 },
 
+                getSocialPlaceholder(iconClass) {
+                    if (!iconClass) return "Pilih ikon sosmed dulu...";
+                    const map = {
+                        'fa-brands fa-whatsapp': 'No. WA (Contoh: 081234567890)',
+                        'fa-brands fa-instagram': 'Username IG (tanpa @)',
+                        'fa-brands fa-tiktok': 'Username TikTok (tanpa @)',
+                        'fa-brands fa-twitter': 'Username Twitter / X',
+                        'fa-brands fa-telegram': 'Username Telegram (tanpa @)',
+                        'fa-solid fa-envelope': 'Alamat Email',
+                        'fa-brands fa-youtube': 'Link Channel YouTube',
+                        'fa-brands fa-facebook': 'Username/URL Profil Facebook',
+                        'fa-brands fa-linkedin': 'Link Profil LinkedIn',
+                        'fa-solid fa-globe': 'URL Website (https://...)',
+                        'fa-solid fa-map-marker-alt': 'URL Google Maps'
+                    };
+                    return map[iconClass] || 'URL atau Username...';
+                },
+
+                formatSocialUrl(iconClass, input) {
+                    input = input.trim();
+                    if (!input) return input;
+
+                    if (input.startsWith('http://') || input.startsWith('https://') || input.startsWith('mailto:')) {
+                        return input;
+                    }
+
+                    let cleanInput = input.replace(/^@/, '');
+
+                    switch (iconClass) {
+                        case 'fa-brands fa-whatsapp':
+                            let phone = input.replace(/\D/g, '');
+                            if (phone.startsWith('0')) phone = '62' + phone.substring(1);
+                            return `https://wa.me/${phone}`;
+                        case 'fa-brands fa-instagram':
+                            return `https://instagram.com/${cleanInput}`;
+                        case 'fa-brands fa-tiktok':
+                            return `https://www.tiktok.com/@${cleanInput}`;
+                        case 'fa-brands fa-twitter':
+                            return `https://twitter.com/${cleanInput}`;
+                        case 'fa-brands fa-telegram':
+                            return `https://t.me/${cleanInput}`;
+                        case 'fa-brands fa-facebook':
+                            return `https://www.facebook.com/${cleanInput}`;
+                        case 'fa-solid fa-envelope':
+                            return `mailto:${cleanInput}`;
+
+                        default:
+                            return `https://${cleanInput}`;
+                    }
+                },
+
+                reverseFormatSocialUrl(iconClass, url) {
+                    if (!url) return '';
+                    let cleanUrl = url.trim();
+
+                    // Kupas URL kembali menjadi username/nomor berdasarkan ikonnya
+                    switch (iconClass) {
+                        case 'fa-brands fa-whatsapp':
+                            cleanUrl = cleanUrl.replace('https://wa.me/', '');
+                            // Kembalikan awalan 62 menjadi 0 agar akrab di mata user
+                            if (cleanUrl.startsWith('62')) cleanUrl = '0' + cleanUrl.substring(2);
+                            return cleanUrl;
+                        case 'fa-brands fa-instagram':
+                            return cleanUrl.replace('https://instagram.com/', '').replace('https://www.instagram.com/', '');
+                        case 'fa-brands fa-tiktok':
+                            return cleanUrl.replace('https://www.tiktok.com/@', '').replace('https://tiktok.com/@', '');
+                        case 'fa-brands fa-twitter':
+                            return cleanUrl.replace('https://twitter.com/', '').replace('https://x.com/', '');
+                        case 'fa-brands fa-telegram':
+                            return cleanUrl.replace('https://t.me/', '');
+                        case 'fa-brands fa-facebook':
+                            return cleanUrl.replace('https://www.facebook.com/', '').replace('https://facebook.com/', '');
+                        case 'fa-solid fa-envelope':
+                            return cleanUrl.replace('mailto:', '');
+                        default:
+                            return cleanUrl;
+                    }
+                },
+
                 openEditModal(id, title, url, isActive, icon, displayAs) {
                     this.editLinkId = id;
                     this.editTitle = title;
-                    this.editUrl = url;
                     this.editIsActive = isActive;
                     this.editIcon = icon;
                     this.editDisplayAs = displayAs;
-                    this.errors = {}; // Reset pesan error
+                    this.errors = {};
+
+                    if (displayAs === 'social') {
+                        this.editUrl = this.reverseFormatSocialUrl(icon, url);
+                    } else {
+                        this.editUrl = url;
+                    }
+
                     this.editModalOpen = true;
                 },
 
                 // AJAX Update Function
                 updateLink() {
                     this.isSaving = true;
-                    this.errors = {}; // Reset error sebelum request
+                    this.errors = {};
+
+                    let finalUrl = this.editUrl;
+                    if (this.editDisplayAs === 'social') {
+                        finalUrl = this.formatSocialUrl(this.editIcon, this.editUrl);
+                    }
 
                     const data = {
                         title: this.editTitle,
-                        destination_url: this.editUrl,
+                        destination_url: finalUrl,
                         is_active: this.editIsActive ? 1 : 0,
                         display_as: this.editDisplayAs,
                         icon: this.editIcon
@@ -823,6 +932,12 @@
                     this.isAdding = true;
                     const form = event.target;
                     const formData = new FormData(form);
+
+                    if (formData.get('display_as') === 'social') {
+                        const rawUrl = formData.get('destination_url');
+                        const formattedUrl = this.formatSocialUrl(this.newSocialIcon, rawUrl);
+                        formData.set('destination_url', formattedUrl); // Timpa dengan URL yang benar
+                    }
 
                     fetch(form.action, {
                             method: 'POST',

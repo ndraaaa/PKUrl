@@ -10,13 +10,12 @@ use Illuminate\Support\Facades\Auth;
 
 class PageLinkController extends Controller
 {
-    // SIMPAN TOMBOL BARU KE HALAMAN BIO
     public function store(Request $request, Page $page)
     {
-        if ($page->user_id !== Auth::id()) abort(403);
+        if ($page->user_id !== Auth::id()) abort(403, 'Unauthorized action.');
 
         $request->validate([
-            'destination_url' => 'required|url',
+            'destination_url' => 'required|string',
             'title'           => 'required|max:50',
             'type'            => 'required|in:link,header,embed',
             'icon'            => 'nullable|string',
@@ -24,6 +23,10 @@ class PageLinkController extends Controller
         ]);
 
         $code = Str::random(8);
+        while (Link::where('short_code', $code)->exists()) {
+            $code = Str::random(8);
+        }
+
         $maxOrder = $page->links()->max('order') ?? 0;
 
         $page->links()->create([
@@ -49,7 +52,6 @@ class PageLinkController extends Controller
         return back()->with('success', 'Tombol berhasil ditambahkan!');
     }
 
-    // UPDATE TOMBOL
     public function update(Request $request, Link $link)
     {
         if ($link->page->user_id !== Auth::id()) {
@@ -58,7 +60,7 @@ class PageLinkController extends Controller
 
         $request->validate([
             'title'           => 'required|string|max:255',
-            'destination_url' => 'required|url',
+            'destination_url' => 'required|string',
             'icon'            => 'nullable|string',
             'display_as'      => 'nullable|in:button,social',
         ]);
@@ -76,9 +78,9 @@ class PageLinkController extends Controller
 
         if ($request->wantsJson()) {
             return response()->json([
-                'status' => 'success',
+                'status'  => 'success',
                 'message' => 'Link berhasil diperbarui',
-                'data' => $link
+                'data'    => $link
             ]);
         }
 
@@ -100,11 +102,12 @@ class PageLinkController extends Controller
 
     public function destroy(Request $request, Link $link)
     {
-        if ($link->page->user_id !== auth()->id()) {
-            abort(403);
+        if ($link->page->user_id !== Auth::id()) { 
+            abort(403, 'Unauthorized action.');
         }
 
         $link->delete();
+
         if ($request->wantsJson()) {
             return response()->json(['status' => 'success', 'message' => 'Link dihapus']);
         }

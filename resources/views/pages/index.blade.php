@@ -215,7 +215,6 @@
                                         x-text="page.handle"></a>
 
                                     <div class="flex items-center gap-3 mt-2">
-                                        {{-- BADGE STATUS DINAMIS (Merah untuk Nonaktif, Hijau untuk Aktif) --}}
                                         <span
                                             class="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full transition-colors duration-300"
                                             :class="page.is_public ?
@@ -278,7 +277,6 @@
 
         </div>
 
-        {{-- MODAL CREATE PAGE --}}
         <div x-show="showCreateModal" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto"
             aria-labelledby="modal-title" role="dialog" aria-modal="true">
 

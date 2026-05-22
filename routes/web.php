@@ -10,6 +10,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminLinkController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AdvertisementController;
 
 Route::view('/', 'welcome')->name('home');
 Route::post('/guest/shorten', [ShortLinkController::class, 'storePublic'])->name('guest.shorten');
@@ -56,6 +57,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/links/bulk-delete', [AdminLinkController::class, 'bulkDestroy'])->name('links.bulk_destroy');
         Route::post('/links/{link}/toggle', [AdminLinkController::class, 'toggleStatus'])->name('links.toggle');
         Route::delete('/links/{link}', [AdminLinkController::class, 'destroy'])->name('links.destroy');
+        Route::get('/pengaturan-iklan', [AdvertisementController::class, 'index'])->name('advertisements.index');
+        Route::post('/pengaturan-iklan', [AdvertisementController::class, 'store'])->name('advertisements.store');
+        Route::put('/pengaturan-iklan/{id}', [AdvertisementController::class, 'update'])->name('advertisements.update');
+        Route::delete('/pengaturan-iklan/{id}', [AdvertisementController::class, 'destroy'])->name('advertisements.destroy');
     });
 });
 
